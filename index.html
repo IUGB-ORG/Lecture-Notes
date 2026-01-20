@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSC 4315 - Introduction to Artificial Intelligence</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .logo-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .logo-section img {
+            max-width: 600px;
+            width: 100%;
+            height: auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2.5em; 
+        }
+        .subtitle { 
+            margin-top: 10px; 
+            font-size: 1.1em; 
+            opacity: 0.9; 
+        }
+        h2 { 
+            color: #2c3e50; 
+            margin-top: 30px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+        .course-section { 
+            background: white; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-section {
+            background: #fff9e6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 5px solid #f39c12;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-section p {
+            margin: 10px 0;
+        }
+        .summary-section strong {
+            color: #d68910;
+        }
+        .course-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+        ul { 
+            list-style-type: none; 
+            padding: 0; 
+        }
+        li { 
+            margin: 12px 0; 
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        li:hover {
+            background: #e8f4f8;
+        }
+        a { 
+            color: #3498db; 
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover { 
+            color: #667eea;
+            text-decoration: underline; 
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            color: #7f8c8d;
+        }
+        .instructor-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .section-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            margin-right: 8px;
+        }
+        .practice-exercise {
+            border-left-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-section">
+        <img src="iugb.png" alt="International University of Grand-Bassam Logo">
+    </div>
+
+    <div class="header">
+        <h1>CSC 4315 - Introduction to Artificial Intelligence</h1>
+        <div class="subtitle">Department of Applied Computing and Artificial Intelligence</div>
+    </div>
+
+    <div class="instructor-info">
+        <strong>Instructor:</strong> Dr. Guillaume Sanje Mpacko<br>
+        <strong>Position:</strong> Associate Professor of Artificial Intelligence and Software Engineering
+    </div>
+
+    <div class="summary-section">
+        <h2 style="margin-top: 0; border: none;">📘 Python Fundamentals for AI - Learning Guide</h2>
+        <p>
+            Before diving into artificial intelligence algorithms and machine learning models, it is essential to master the Python programming 
+            tools that form the foundation of modern AI development. These fundamentals are not just syntax exercises—they are the building blocks 
+            you will use daily when implementing neural networks, processing datasets, and visualizing results.
+        </p>
+        <p>
+            <strong>Why These Topics Matter for AI:</strong>
+        </p>
+        <p>
+            <strong>• NumPy arrays and vectorization</strong> enable you to work with tensors and matrices efficiently—the core data structures in machine learning.<br>
+            <strong>• Pandas DataFrames</strong> are essential for data preprocessing, feature engineering, and exploratory data analysis.<br>
+            <strong>• Matplotlib</strong> helps you visualize training curves, decision boundaries, and model performance metrics.<br>
+            <strong>• Python's functional programming features</strong> (lambda functions, comprehensions) make your code more concise and Pythonic.
+        </p>
+        <p>
+            <strong>How to Proceed:</strong> Work through the materials in the order presented below. Each topic builds on previous ones, 
+            starting with core Python concepts, then moving to numerical computing with NumPy, data visualization with Matplotlib, and finally 
+            data manipulation with Pandas. Complete the practice exercises to reinforce your understanding—these skills will be applied throughout 
+            the AI course in assignments and projects.
+        </p>
+    </div>
+
+    <div class="course-section">
+        <div class="course-title">Python Fundamentals - Recommended Learning Progression</div>
+        
+        <h3>Section 1: Core Python Concepts</h3>
+        <ul>
+            <li>
+                <span class="section-number">1</span>
+                <a href="Python Fundamentals/Dictionaries_and_Sets.pdf" target="_blank">📄 Dictionaries and Sets</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Essential Python data structures for storing and retrieving information efficiently
+                </div>
+            </li>
+            <li>
+                <span class="section-number">2</span>
+                <a href="Python Fundamentals/Lambda_Functions.pdf" target="_blank">📄 Lambda Functions</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Anonymous functions for functional programming patterns
+                </div>
+            </li>
+            <li>
+                <span class="section-number">3</span>
+                <a href="Python Fundamentals/List_Comprehensions.pdf" target="_blank">📄 List Comprehensions</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Pythonic way to create and transform lists in a single line
+                </div>
+            </li>
+        </ul>
+
+        <h3>Section 2: NumPy and Vectorization</h3>
+        <ul>
+            <li>
+                <span class="section-number">4</span>
+                <a href="Python Fundamentals/Array_Creation.pdf" target="_blank">📄 Array Creation</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Creating NumPy arrays—the foundation for numerical computing in AI
+                </div>
+            </li>
+            <li>
+                <span class="section-number">5</span>
+                <a href="Python Fundamentals/Array_Indexing_and_Slicing.pdf" target="_blank">📄 Array Indexing and Slicing</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Accessing and manipulating array elements and subarrays
+                </div>
+            </li>
+            <li>
+                <span class="section-number">6</span>
+                <a href="Python Fundamentals/Loops_vs_Vectorizations.pdf" target="_blank">📄 Loops vs Vectorization</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Understanding why vectorized operations are faster than loops
+                </div>
+            </li>
+            <li>
+                <span class="section-number">7</span>
+                <a href="Python Fundamentals/Common_Vectorization_Patterns.pdf" target="_blank">📄 Common Vectorization Patterns</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Practical patterns for writing efficient NumPy code
+                </div>
+            </li>
+        </ul>
+
+        <h3>Section 3: Data Visualization with Matplotlib</h3>
+        <ul>
+            <li>
+                <span class="section-number">8</span>
+                <a href="Python Fundamentals/Matplotlib_-_Line_Plots.pdf" target="_blank">📄 Matplotlib - Line Plots</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Creating basic line plots for visualizing trends and training curves
+                </div>
+            </li>
+            <li>
+                <span class="section-number">9</span>
+                <a href="Python Fundamentals/Matplotlib_-_Plots_and_Histograms.pdf" target="_blank">📄 Matplotlib - Plots and Histograms</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Scatter plots and histograms for data distribution analysis
+                </div>
+            </li>
+            <li>
+                <span class="section-number">10</span>
+                <a href="Python Fundamentals/Matplotlib_-_Heatmaps_for_Matrices.pdf" target="_blank">📄 Matplotlib - Heatmaps for Matrices</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Visualizing matrices and correlation patterns with heatmaps
+                </div>
+            </li>
+        </ul>
+
+        <h3>Section 4: Data Manipulation with Pandas</h3>
+        <ul>
+            <li>
+                <span class="section-number">11</span>
+                <a href="Python Fundamentals/Pandas_-_Creating_DataFrames.pdf" target="_blank">📄 Pandas - Creating DataFrames</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Introduction to Pandas DataFrames for tabular data
+                </div>
+            </li>
+            <li>
+                <span class="section-number">12</span>
+                <a href="Python Fundamentals/Pandas_-_Data_Selection_and_Filtering.pdf" target="_blank">📄 Pandas - Data Selection and Filtering</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Selecting rows and columns, filtering data based on conditions
+                </div>
+            </li>
+            <li>
+                <span class="section-number">13</span>
+                <a href="Python Fundamentals/Pandas_-_Data_Aggregation.pdf" target="_blank">📄 Pandas - Data Aggregation</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Grouping, aggregating, and summarizing data for analysis
+                </div>
+            </li>
+        </ul>
+
+        <h3>Section 5: AI/ML Concepts and Practice</h3>
+        <ul>
+            <li>
+                <span class="section-number">14</span>
+                <a href="Python Fundamentals/Mean_Squarred_Error.pdf" target="_blank">📄 Mean Squared Error</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Understanding and computing MSE—a fundamental metric in machine learning
+                </div>
+            </li>
+            <li class="practice-exercise">
+                <span class="section-number" style="background: #27ae60;">Practice</span>
+                <a href="Python Fundamentals/Practice_-_Exercise_1.pdf" target="_blank">✏️ Practice Exercise 1</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Apply your knowledge from Sections 1-2
+                </div>
+            </li>
+            <li class="practice-exercise">
+                <span class="section-number" style="background: #27ae60;">Practice</span>
+                <a href="Python Fundamentals/Practice_-_Exercise_2.pdf" target="_blank">✏️ Practice Exercise 2</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Apply your knowledge from Sections 3-4
+                </div>
+            </li>
+            <li class="practice-exercise">
+                <span class="section-number" style="background: #27ae60;">Practice</span>
+                <a href="Python Fundamentals/Practice_-_Exercise_3.pdf" target="_blank">✏️ Practice Exercise 3</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Comprehensive practice integrating all concepts
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>Last updated: January 2026</p>
+        <p><small>All materials © 2026 Dr. Guillaume Sanje Mpacko, IUGB. For educational use only.</small></p>
+    </div>
+</body>
+</html>
