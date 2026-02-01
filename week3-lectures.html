@@ -83,6 +83,25 @@
             font-weight: bold;
             color: #34495e;
             margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .lecture-nav {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85em;
+        }
+        .lecture-nav a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .lecture-nav a:hover {
+            background-color: #f0f0f0;
         }
         ul { 
             list-style-type: none; 
@@ -151,7 +170,13 @@
     </div>
 
     <div class="course-section">
-        <div class="course-title">Week 3 Lectures</div>
+        <div class="course-title">
+            <span>Week 3 Lectures</span>
+            <div class="lecture-nav">
+                <a href="week2-lectures.html">&lt;-- Previous Lecture</a>
+                <a href="week4-lectures.html">Next Lecture --&gt;</a>
+            </div>
+        </div>
         
         <ul>
             <li>
