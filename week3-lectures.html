@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 3 Lectures - CSC 4315</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .logo-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .logo-section img {
+            max-width: 600px;
+            width: 100%;
+            height: auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2.5em; 
+        }
+        .subtitle { 
+            margin-top: 10px; 
+            font-size: 1.1em; 
+            opacity: 0.9; 
+        }
+        .nav-menu {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .nav-menu a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .nav-menu a:hover {
+            background-color: #f0f0f0;
+        }
+        .course-section { 
+            background: white; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-section {
+            background: #fff9e6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 5px solid #f39c12;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .course-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+        ul { 
+            list-style-type: none; 
+            padding: 0; 
+        }
+        li { 
+            margin: 12px 0; 
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        li:hover {
+            background: #e8f4f8;
+        }
+        a { 
+            color: #3498db; 
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover { 
+            color: #667eea;
+            text-decoration: underline; 
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            color: #7f8c8d;
+        }
+        .lecture-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-section">
+        <img src="iugb.png" alt="International University of Grand-Bassam Logo">
+    </div>
+
+    <div class="header">
+        <h1>Week 3: Data Manipulation & Visualization</h1>
+        <div class="subtitle">Lecture Materials</div>
+    </div>
+
+    <div class="nav-menu">
+        <a href="index.html">🏠 Home</a>
+        <a href="python-basics.html">🐍 Python Basics</a>
+        <a href="python-fundamentals.html">🤖 Python for AI</a>
+        <a href="in-class-lectures.html">📖 All Lectures</a>
+    </div>
+
+    <div class="summary-section">
+        <p>
+            <strong>Week 3 Focus:</strong> This week covers data manipulation techniques and visualization methods 
+            essential for exploratory data analysis and presenting machine learning results.
+        </p>
+    </div>
+
+    <div class="course-section">
+        <div class="course-title">Week 3 Lectures</div>
+        
+        <ul>
+            <li>
+                <span class="lecture-number">Lecture 5</span>
+                <a href="In_Class_Lectures/Week03_Lecture05.pdf" target="_blank">📄 Data Manipulation with Pandas</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    DataFrames, data selection, filtering, and aggregation techniques
+                </div>
+            </li>
+            <li>
+                <span class="lecture-number">Lecture 6</span>
+                <a href="In_Class_Lectures/Week03_Lecture06.pdf" target="_blank">📄 Data Visualization with Matplotlib</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Creating plots, visualizing distributions, and presenting ML results
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>Last updated: January 2026</p>
+        <p><small>All materials © 2026 Dr. Guillaume Sanje Mpacko, IUGB. For educational use only.</small></p>
+    </div>
+</body>
+</html>
