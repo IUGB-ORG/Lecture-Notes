@@ -112,6 +112,47 @@
             color: #7f8c8d;
             font-size: 1.1em;
         }
+        .summary-section {
+            background: #fff9e6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 5px solid #f39c12;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        ul { 
+            list-style-type: none; 
+            padding: 0; 
+        }
+        li { 
+            margin: 12px 0; 
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        li:hover {
+            background: #e8f4f8;
+        }
+        a { 
+            color: #3498db; 
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover { 
+            color: #667eea;
+            text-decoration: underline; 
+        }
+        .lecture-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            margin-right: 8px;
+        }
         .footer {
             margin-top: 50px;
             padding-top: 20px;
@@ -138,6 +179,13 @@
         <a href="in-class-lectures.html">📖 All Lectures</a>
     </div>
 
+    <div class="summary-section">
+        <p>
+            <strong>Week 7 Focus:</strong> This week advances neural network concepts with deeper architectures, 
+            regularization techniques, and optimization strategies for training deep networks.
+        </p>
+    </div>
+
     <div class="course-section">
         <div class="course-title">
             <span>Week 7 Lectures</span>
@@ -147,11 +195,22 @@
             </div>
         </div>
         
-        <div class="coming-soon">
-            <h2>📚 Course Materials Coming Soon</h2>
-            <p>Lecture materials for Week 7 will be posted here as the course progresses.</p>
-            <p style="margin-top: 20px; font-size: 0.9em;">Check back later or return to <a href="in-class-lectures.html">All Lectures</a> to see available materials.</p>
-        </div>
+        <ul>
+            <li>
+                <span class="lecture-number">Lecture 13</span>
+                <a href="In_Class_Lectures/Week07_Lecture13.pdf" target="_blank">📄 Neural Networks II - Part 1</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Deep neural networks and advanced architectures
+                </div>
+            </li>
+            <li>
+                <span class="lecture-number">Lecture 14</span>
+                <a href="In_Class_Lectures/Week07_Lecture14.pdf" target="_blank">📄 Neural Networks II - Part 2</a>
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
+                    Regularization, dropout, and batch normalization
+                </div>
+            </li>
+        </ul>
     </div>
 
     <div class="footer">
