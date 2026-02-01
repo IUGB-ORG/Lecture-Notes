@@ -132,23 +132,54 @@
             text-align: center;
             color: #7f8c8d;
         }
-        .section-number {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 0.9em;
-            margin-right: 8px;
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 30px 0;
         }
-        .week-badge {
-            display: inline-block;
-            background: #e74c3c;
+        @media (max-width: 1200px) {
+            .week-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .week-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 480px) {
+            .week-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .week-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 0.85em;
-            margin-right: 8px;
+            padding: 20px 15px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 120px;
+        }
+        .week-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        .week-number {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .week-topic {
+            font-size: 0.9em;
+            opacity: 0.95;
+            line-height: 1.4;
         }
     </style>
 </head>
@@ -171,80 +202,91 @@
     <div class="summary-section">
         <h2 style="margin-top: 0; border: none;">📖 In Class Lectures - Course Materials</h2>
         <p>
-            This section contains the lecture slides and materials covered during class sessions. Each lecture builds 
-            upon previous concepts and introduces new topics essential for understanding artificial intelligence and 
-            machine learning.
-        </p>
-        <p>
-            <strong>How to Use These Materials:</strong> Review the lecture notes after each class session to reinforce 
-            your understanding. The lectures are organized by week and cover topics including Python fundamentals, 
-            NumPy, data structures, and machine learning foundations. Use these materials alongside the practice 
-            exercises and assignments to master the course content.
+            This section contains the lecture slides and materials covered during class sessions. Each week focuses 
+            on specific topics in artificial intelligence and machine learning. Click on any week to access the 
+            corresponding lecture materials.
         </p>
     </div>
 
     <div class="course-section">
-        <div class="course-title">Lecture Materials - Chronological Order</div>
+        <div class="course-title">Course Schedule - Weekly Topics</div>
         
-        <h3>Week 1</h3>
-        <ul>
-            <li>
-                <span class="week-badge">Week 1</span>
-                <span class="section-number">Lecture 1</span>
-                <a href="In_Class_Lectures/Week01_Lecture01.pdf" target="_blank">📄 Week 01 - Lecture 01: Python Fundamentals for AI</a>
-                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
-                    Introduction to Python basics, data structures, control flow, and functions
-                </div>
-            </li>
-            <li>
-                <span class="week-badge">Week 1</span>
-                <span class="section-number">Lecture 2</span>
-                <a href="In_Class_Lectures/Week01_Lecture02.pdf" target="_blank">📄 Week 01 - Lecture 02: Introduction to NumPy</a>
-                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
-                    NumPy arrays, array operations, and numerical computing essentials
-                </div>
-            </li>
-        </ul>
-
-        <h3>Week 2</h3>
-        <ul>
-            <li>
-                <span class="week-badge">Week 2</span>
-                <span class="section-number">Lecture 3</span>
-                <a href="In_Class_Lectures/Week02_Lecture03.pdf" target="_blank">📄 Week 02 - Lecture 03: NumPy Fundamentals</a>
-                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
-                    Array manipulation, reshaping, linear algebra operations
-                </div>
-            </li>
-            <li>
-                <span class="week-badge">Week 2</span>
-                <span class="section-number">Lecture 4</span>
-                <a href="In_Class_Lectures/Week02_Lecture04.pdf" target="_blank">📄 Week 02 - Lecture 04: Intermediate NumPy</a>
-                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
-                    Universal functions, advanced indexing, and performance optimization
-                </div>
-            </li>
-        </ul>
-
-        <h3>Week 3</h3>
-        <ul>
-            <li>
-                <span class="week-badge">Week 3</span>
-                <span class="section-number">Lecture 5</span>
-                <a href="In_Class_Lectures/Week03_Lecture05.pdf" target="_blank">📄 Week 03 - Lecture 05</a>
-                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
-                    Advanced topics in Python and NumPy for AI applications
-                </div>
-            </li>
-            <li>
-                <span class="week-badge">Week 3</span>
-                <span class="section-number">Lecture 6</span>
-                <a href="In_Class_Lectures/Week03_Lecture06.pdf" target="_blank">📄 Week 03 - Lecture 06</a>
-                <div style="font-size: 0.9em; color: #666; margin-top: 5px; margin-left: 32px;">
-                    Continuation of Week 3 topics
-                </div>
-            </li>
-        </ul>
+        <div class="week-grid">
+            <a href="week1-lectures.html" class="week-button">
+                <div class="week-number">Week 1</div>
+                <div class="week-topic">Introduction & Python Foundations</div>
+            </a>
+            
+            <a href="week2-lectures.html" class="week-button">
+                <div class="week-number">Week 2</div>
+                <div class="week-topic">NumPy Basics & Intermediate</div>
+            </a>
+            
+            <a href="week3-lectures.html" class="week-button">
+                <div class="week-number">Week 3</div>
+                <div class="week-topic">Data Manipulation & Visualization</div>
+            </a>
+            
+            <a href="week4-lectures.html" class="week-button">
+                <div class="week-number">Week 4</div>
+                <div class="week-topic">Machine Learning Foundations I</div>
+            </a>
+            
+            <a href="week5-lectures.html" class="week-button">
+                <div class="week-number">Week 5</div>
+                <div class="week-topic">Machine Learning Foundations II</div>
+            </a>
+            
+            <a href="week6-lectures.html" class="week-button">
+                <div class="week-number">Week 6</div>
+                <div class="week-topic">Neural Networks I</div>
+            </a>
+            
+            <a href="week7-lectures.html" class="week-button">
+                <div class="week-number">Week 7</div>
+                <div class="week-topic">Neural Networks II</div>
+            </a>
+            
+            <a href="week8-lectures.html" class="week-button">
+                <div class="week-number">Week 8</div>
+                <div class="week-topic">Deep Learning with PyTorch I</div>
+            </a>
+            
+            <a href="week9-lectures.html" class="week-button">
+                <div class="week-number">Week 9</div>
+                <div class="week-topic">Deep Learning with PyTorch II</div>
+            </a>
+            
+            <a href="week10-lectures.html" class="week-button">
+                <div class="week-number">Week 10</div>
+                <div class="week-topic">Convolutional Neural Networks I</div>
+            </a>
+            
+            <a href="week11-lectures.html" class="week-button">
+                <div class="week-number">Week 11</div>
+                <div class="week-topic">Convolutional Neural Networks II</div>
+            </a>
+            
+            <a href="week12-lectures.html" class="week-button">
+                <div class="week-number">Week 12</div>
+                <div class="week-topic">Introduction to NLP & Sequence Models</div>
+            </a>
+            
+            <a href="week13-lectures.html" class="week-button">
+                <div class="week-number">Week 13</div>
+                <div class="week-topic">Transformer Architecture</div>
+            </a>
+            
+            <a href="week14-lectures.html" class="week-button">
+                <div class="week-number">Week 14</div>
+                <div class="week-topic">Foundation Models & Hugging Face</div>
+            </a>
+            
+            <a href="week15-lectures.html" class="week-button">
+                <div class="week-number">Week 15</div>
+                <div class="week-topic">Large Language Models & Final Projects</div>
+            </a>
+        </div>
     </div>
 
     <div class="footer">
