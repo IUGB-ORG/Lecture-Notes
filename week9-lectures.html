@@ -70,6 +70,31 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        .course-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .lecture-nav {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85em;
+        }
+        .lecture-nav a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .lecture-nav a:hover {
+            background-color: #f0f0f0;
+        }
         .coming-soon {
             background: #e8f4f8;
             padding: 40px 20px;
@@ -113,10 +138,20 @@
         <a href="in-class-lectures.html">📖 All Lectures</a>
     </div>
 
-    <div class="coming-soon">
-        <h2>📚 Course Materials Coming Soon</h2>
-        <p>Lecture materials for Week 9 will be posted here as the course progresses.</p>
-        <p style="margin-top: 20px; font-size: 0.9em;">Check back later or return to <a href="in-class-lectures.html">All Lectures</a> to see available materials.</p>
+    <div class="course-section">
+        <div class="course-title">
+            <span>Week 9 Lectures</span>
+            <div class="lecture-nav">
+                <a href="week8-lectures.html">&lt;-- Previous Lecture</a>
+                <a href="week10-lectures.html">Next Lecture --&gt;</a>
+            </div>
+        </div>
+        
+        <div class="coming-soon">
+            <h2>📚 Course Materials Coming Soon</h2>
+            <p>Lecture materials for Week 9 will be posted here as the course progresses.</p>
+            <p style="margin-top: 20px; font-size: 0.9em;">Check back later or return to <a href="in-class-lectures.html">All Lectures</a> to see available materials.</p>
+        </div>
     </div>
 
     <div class="footer">
