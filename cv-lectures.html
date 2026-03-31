@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Vision Lectures - CSC 4315</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .logo-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .logo-section img {
+            max-width: 600px;
+            width: 100%;
+            height: auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            margin-top: 10px;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .nav-menu {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .nav-menu a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .nav-menu a:hover {
+            background-color: #f0f0f0;
+        }
+        .summary-section {
+            background: #eef2ff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 5px solid #4f46e5;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-section h2 {
+            margin-top: 0;
+            color: #1e1b4b;
+            border: none;
+        }
+        .section-header {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #1e1b4b;
+            margin: 30px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #4f46e5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-header .badge {
+            font-size: 0.65em;
+            background: #4f46e5;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+        .lecture-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-top: 4px solid #4f46e5;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .lecture-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(79,70,229,0.18);
+        }
+        .lecture-card .card-tag {
+            font-size: 0.75em;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #4f46e5;
+            margin-bottom: 6px;
+        }
+        .lecture-card h3 {
+            margin: 0 0 8px 0;
+            color: #1e1b4b;
+            font-size: 1.05em;
+            line-height: 1.4;
+        }
+        .lecture-card p {
+            margin: 0;
+            font-size: 0.88em;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+        /* Deep dive cards */
+        .dive-card {
+            border-top-color: #7c3aed;
+        }
+        .dive-card .card-tag { color: #7c3aed; }
+        .dive-card:hover { box-shadow: 0 6px 16px rgba(124,58,237,0.18); }
+
+        /* Interactive tool cards */
+        .tool-card {
+            border-top-color: #059669;
+        }
+        .tool-card .card-tag { color: #059669; }
+        .tool-card:hover { box-shadow: 0 6px 16px rgba(5,150,105,0.18); }
+        .tool-card .card-icon {
+            font-size: 1.8em;
+            margin-bottom: 8px;
+        }
+
+        .learning-path {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .learning-path h3 {
+            color: #1e1b4b;
+            margin-top: 0;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+        .path-steps {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+        .path-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 100px;
+        }
+        .path-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            position: relative;
+            z-index: 1;
+        }
+        .path-step .step-label {
+            font-size: 0.78em;
+            color: #4b5563;
+            text-align: center;
+            margin-top: 6px;
+            line-height: 1.3;
+        }
+        .path-arrow {
+            flex: 0 0 30px;
+            text-align: center;
+            font-size: 1.4em;
+            color: #9ca3af;
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            .path-steps { flex-direction: column; align-items: flex-start; }
+            .path-arrow { transform: rotate(90deg); margin: 0 0 0 10px; }
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo-section">
+        <img src="iugb.png" alt="International University of Grand-Bassam Logo">
+    </div>
+
+    <div class="header">
+        <h1>🖼️ Computer Vision</h1>
+        <div class="subtitle">Convolutional Neural Networks — Interactive Lecture Series</div>
+    </div>
+
+    <div class="nav-menu">
+        <a href="index.html">🏠 Home</a>
+        <a href="in-class-lectures.html">📖 All Lectures</a>
+        <a href="week10-lectures.html">📌 Week 10</a>
+        <a href="week11-lectures.html">📌 Week 11</a>
+        <a href="python-fundamentals.html">🤖 Python for AI</a>
+    </div>
+
+    <div class="summary-section">
+        <h2>📐 About This Series</h2>
+        <p>
+            These interactive HTML lectures accompany <strong>Weeks 10–11</strong> of CSC 4315 and form a complete 
+            self-contained introduction to Convolutional Neural Networks. The series progresses from 
+            first principles (how images are represented as data) through the convolution operation, 
+            full CNN architectures, the landmark models that defined the field, and modern transfer 
+            learning workflows. Deep-dive supplements and live interactive tools reinforce every concept.
+        </p>
+        <p>
+            <strong>Format:</strong> All files are standalone HTML — no internet connection or installation required. 
+            Open any file directly in a browser.
+        </p>
+    </div>
+
+    <!-- Learning Path -->
+    <div class="learning-path">
+        <h3>🗺️ Recommended Learning Path</h3>
+        <div class="path-steps">
+            <div class="path-step">
+                <div class="path-circle">L1</div>
+                <div class="step-label">Images as Data</div>
+            </div>
+            <div class="path-arrow">→</div>
+            <div class="path-step">
+                <div class="path-circle">L2</div>
+                <div class="step-label">Convolution</div>
+            </div>
+            <div class="path-arrow">→</div>
+            <div class="path-step">
+                <div class="path-circle">🔬</div>
+                <div class="step-label">Filters Deep Dive</div>
+            </div>
+            <div class="path-arrow">→</div>
+            <div class="path-step">
+                <div class="path-circle">L3</div>
+                <div class="step-label">CNN Architecture</div>
+            </div>
+            <div class="path-arrow">→</div>
+            <div class="path-step">
+                <div class="path-circle">L4</div>
+                <div class="step-label">History</div>
+            </div>
+            <div class="path-arrow">→</div>
+            <div class="path-step">
+                <div class="path-circle">L5</div>
+                <div class="step-label">Transfer Learning</div>
+            </div>
+            <div class="path-arrow">→</div>
+            <div class="path-step">
+                <div class="path-circle" style="background: linear-gradient(135deg,#059669,#10b981);">⚡</div>
+                <div class="step-label">Interactive Tools</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Lectures -->
+    <div class="section-header">
+        Core Lectures <span class="badge">5 LECTURES · WEEKS 10–11</span>
+    </div>
+
+    <div class="card-grid">
+        <a href="CV_Lectures/CV_Lecture1_Images_As_Data.html" class="lecture-card" target="_blank">
+            <div class="card-tag">Lecture 1 · Week 10</div>
+            <h3>Images as Data</h3>
+            <p>How pixels become numbers. Channels, color spaces, and why numerical representation is the foundation of all computer vision.</p>
+        </a>
+        <a href="CV_Lectures/CV_Lecture2_Convolution.html" class="lecture-card" target="_blank">
+            <div class="card-tag">Lecture 2 · Week 10</div>
+            <h3>The Convolution Operation</h3>
+            <p>Step-by-step walkthrough of 2-D convolution, stride, padding, and how kernels detect edges, textures, and patterns.</p>
+        </a>
+        <a href="CV_Lectures/CV_Lecture3_CNN_Architecture.html" class="lecture-card" target="_blank">
+            <div class="card-tag">Lecture 3 · Week 10–11</div>
+            <h3>CNN Architecture End-to-End</h3>
+            <p>Assembling conv layers, pooling, activation functions, and fully-connected heads into a complete trainable network.</p>
+        </a>
+        <a href="CV_Lectures/CV_Lecture4_Historical_Victories.html" class="lecture-card" target="_blank">
+            <div class="card-tag">Lecture 4 · Week 11</div>
+            <h3>Historical Victories</h3>
+            <p>From LeNet to AlexNet to VGG and ResNet — the landmark models that conquered ImageNet and redefined computer vision.</p>
+        </a>
+        <a href="CV_Lectures/CV_Lecture5_Transfer_Learning.html" class="lecture-card" target="_blank">
+            <div class="card-tag">Lecture 5 · Week 11</div>
+            <h3>Transfer Learning</h3>
+            <p>Leveraging pre-trained weights to solve new vision tasks with minimal data. Feature extraction vs. fine-tuning strategies.</p>
+        </a>
+    </div>
+
+    <!-- Deep Dives -->
+    <div class="section-header">
+        Deep Dives &amp; Supplements <span class="badge">ENRICHMENT</span>
+    </div>
+
+    <div class="card-grid">
+        <a href="CV_Lectures/CV_Lecture_Filters.html" class="lecture-card dive-card" target="_blank">
+            <div class="card-tag">Deep Dive</div>
+            <h3>CNN Filters &amp; Kernels</h3>
+            <p>A thorough examination of what filters actually learn: Sobel edges, Gabor patterns, colour blobs, and high-level detectors. The heart of visual intelligence.</p>
+        </a>
+        <a href="CV_Lectures/CNN_Face_Walkthrough.html" class="lecture-card dive-card" target="_blank">
+            <div class="card-tag">Walkthrough</div>
+            <h3>How a CNN Sees a Face</h3>
+            <p>Narrative-driven walkthrough tracing a face image from raw pixels through every layer. Builds strong visual intuition for what each stage of a CNN actually does.</p>
+        </a>
+    </div>
+
+    <!-- Interactive Tools -->
+    <div class="section-header">
+        Interactive Tools <span class="badge">HANDS-ON</span>
+    </div>
+
+    <div class="card-grid">
+        <a href="CV_Lectures/CNN_Explorer.html" class="lecture-card tool-card" target="_blank">
+            <div class="card-icon">🔬</div>
+            <div class="card-tag">Interactive Tool</div>
+            <h3>CNN Pixel-Level Explorer</h3>
+            <p>Two-layer network visualizer. Manipulate filter weights and watch pixel-by-pixel activations update in real time. Ideal for building convolution intuition.</p>
+        </a>
+        <a href="CV_Lectures/CNN_Visual.html" class="lecture-card tool-card" target="_blank">
+            <div class="card-icon">🗺️</div>
+            <div class="card-tag">Interactive Tool</div>
+            <h3>CNN Visual Feature Map Explorer</h3>
+            <p>Two-layer feature map visualizer backed by ResNet18. Upload an image and observe how each convolutional layer transforms it into abstract representations.</p>
+        </a>
+    </div>
+
+    <div class="footer">
+        <p>Last updated: March 2026</p>
+        <p><small>All materials © 2026 Dr. Guillaume Sanje Mpacko, IUGB. For educational use only.</small></p>
+    </div>
+</body>
+</html>

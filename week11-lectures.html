@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 11 Lectures - CSC 4315</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .logo-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .logo-section img {
+            max-width: 600px;
+            width: 100%;
+            height: auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+            color: #2c2c4a;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            margin-top: 10px;
+            font-size: 1.1em;
+            opacity: 0.85;
+        }
+        .nav-menu {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .nav-menu a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .nav-menu a:hover {
+            background-color: #f0f0f0;
+        }
+        .course-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .course-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .lecture-nav {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85em;
+        }
+        .lecture-nav a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .lecture-nav a:hover {
+            background-color: #f0f0f0;
+        }
+        .summary-section {
+            background: #fff9e6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 5px solid #f39c12;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section-label {
+            font-size: 0.75em;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin: 24px 0 10px 0;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 12px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        li:hover {
+            background: #e8f4f8;
+        }
+        li.html-item {
+            border-left-color: #4f46e5;
+            background: #f5f3ff;
+        }
+        li.html-item:hover {
+            background: #ede9fe;
+        }
+        li.tool-item {
+            border-left-color: #059669;
+            background: #f0fdf4;
+        }
+        li.tool-item:hover {
+            background: #dcfce7;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            color: #667eea;
+            text-decoration: underline;
+        }
+        .lecture-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            margin-right: 8px;
+        }
+        .lecture-number.html-tag {
+            background: #4f46e5;
+        }
+        .lecture-number.tool-tag {
+            background: #059669;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo-section">
+        <img src="iugb.png" alt="International University of Grand-Bassam Logo">
+    </div>
+
+    <div class="header">
+        <h1>Week 11: Convolutional Neural Networks II</h1>
+        <div class="subtitle">Lecture Materials</div>
+    </div>
+
+    <div class="nav-menu">
+        <a href="index.html">🏠 Home</a>
+        <a href="python-basics.html">🐍 Python Basics</a>
+        <a href="python-fundamentals.html">🤖 Python for AI</a>
+        <a href="in-class-lectures.html">📖 All Lectures</a>
+        <a href="cv-lectures.html">🖼️ CV Lectures</a>
+    </div>
+
+    <div class="summary-section">
+        <p>
+            <strong>Week 11 Focus:</strong> This week advances CNN concepts with end-to-end architecture design, 
+            the historical landmark models that defined the field, and modern transfer learning workflows. 
+            Slide decks, interactive HTML lectures, and hands-on tools are all included below.
+        </p>
+    </div>
+
+    <div class="course-section">
+        <div class="course-title">
+            <span>Week 11 Lectures</span>
+            <div class="lecture-nav">
+                <a href="week10-lectures.html">&lt;-- Previous Week</a>
+                <a href="week12-lectures.html">Next Week --&gt;</a>
+            </div>
+        </div>
+
+        <div class="section-label">📄 Slide Decks (PDF)</div>
+        <ul>
+            <li>
+                <span class="lecture-number">Lecture 21</span>
+                <a href="In_Class_Lectures/Week11_Lecture21.pdf" target="_blank">📄 Modern Architectures (ResNet, EfficientNet)</a>
+                <div style="font-size:0.9em;color:#666;margin-top:5px;margin-left:32px;">
+                    State-of-the-art CNN architectures and residual connections
+                </div>
+            </li>
+            <li>
+                <span class="lecture-number">Lecture 22</span>
+                <a href="In_Class_Lectures/Week11_Lecture22.pdf" target="_blank">📄 Transfer Learning &amp; Fine-tuning Pre-trained Models</a>
+                <div style="font-size:0.9em;color:#666;margin-top:5px;margin-left:32px;">
+                    Using pre-trained models and adapting them to new tasks
+                </div>
+            </li>
+        </ul>
+
+        <div class="section-label">🖥️ Interactive HTML Lectures</div>
+        <ul>
+            <li class="html-item">
+                <span class="lecture-number html-tag">CV Lec 3</span>
+                <a href="CV_Lectures/CV_Lecture3_CNN_Architecture.html" target="_blank">🏗️ CNN Architecture End-to-End</a>
+                <div style="font-size:0.9em;color:#555;margin-top:5px;margin-left:90px;">
+                    Assembling conv layers, pooling, activations, and fully-connected heads into a complete network
+                </div>
+            </li>
+            <li class="html-item">
+                <span class="lecture-number html-tag">CV Lec 4</span>
+                <a href="CV_Lectures/CV_Lecture4_Historical_Victories.html" target="_blank">🏆 Historical Victories</a>
+                <div style="font-size:0.9em;color:#555;margin-top:5px;margin-left:90px;">
+                    LeNet → AlexNet → VGG → ResNet: the landmark models that conquered ImageNet
+                </div>
+            </li>
+            <li class="html-item">
+                <span class="lecture-number html-tag">CV Lec 5</span>
+                <a href="CV_Lectures/CV_Lecture5_Transfer_Learning.html" target="_blank">🔄 Transfer Learning</a>
+                <div style="font-size:0.9em;color:#555;margin-top:5px;margin-left:90px;">
+                    Pre-trained weights, feature extraction vs. fine-tuning, and practical workflow
+                </div>
+            </li>
+        </ul>
+
+        <div class="section-label">⚡ Hands-On Interactive Tools</div>
+        <ul>
+            <li class="tool-item">
+                <span class="lecture-number tool-tag">Tool</span>
+                <a href="CV_Lectures/CNN_Visual.html" target="_blank">🗺️ CNN Visual Feature Map Explorer (2-Layer Network)</a>
+                <div style="font-size:0.9em;color:#555;margin-top:5px;margin-left:56px;">
+                    Upload an image and explore how each convolutional layer transforms it into abstract representations
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>Last updated: March 2026</p>
+        <p><small>All materials © 2026 Dr. Guillaume Sanje Mpacko, IUGB. For educational use only.</small></p>
+    </div>
+</body>
+</html>
