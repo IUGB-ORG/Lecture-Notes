@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How a CNN Sees a Face</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #f7f4ef;
+  --card:    #ffffff;
+  --border:  #ddd8ce;
+  --ink:     #1c1814;
+  --ink2:    #4a4438;
+  --muted:   #8a8070;
+  --accent:  #c94030;   /* strong red — "highlight" colour */
+  --blue:    #1a5fa8;
+  --green:   #2a8a50;
+  --amber:   #c07820;
+  --purple:  #7040c0;
+  --teal:    #1a8080;
+  --pos:     #1a6a1a;   /* positive weight */
+  --neg:     #8a1a1a;   /* negative weight */
+  --zero:    #505050;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.78;
+  overflow-x: hidden;
+}
+
+/* ── progress bar ── */
+#progress { position:fixed; top:0; left:0; height:3px; background:var(--accent); z-index:999; transition:width .1s; }
+
+/* ── top bar ── */
+.topbar {
+  background: var(--ink); color: #ccc;
+  padding: 10px 40px; display:flex; justify-content:space-between; align-items:center;
+  font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:1px;
+}
+.topbar b { color:#f0c060; }
+
+/* ── chapter style: full-width sections with clear visual separation ── */
+.chapter {
+  max-width: 960px; margin: 0 auto;
+  padding: 64px 40px 52px;
+  border-bottom: 1px solid var(--border);
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .55s ease, transform .55s ease;
+}
+.chapter.visible { opacity:1; transform:none; }
+
+.chapter-num {
+  font-family:'IBM Plex Mono',monospace; font-size:10px;
+  letter-spacing:4px; text-transform:uppercase; color:var(--muted);
+  margin-bottom: 6px;
+}
+.chapter-num b { color:var(--accent); }
+
+h2 {
+  font-family:'Syne',sans-serif; font-size:clamp(26px,3.5vw,40px);
+  font-weight:800; color:var(--ink); line-height:1.08;
+  margin-bottom:18px; letter-spacing:-0.5px;
+}
+h2 em { color:var(--accent); font-style:normal; }
+
+.lead {
+  font-size:18px; color:var(--ink2); max-width:700px;
+  margin-bottom:32px; line-height:1.8;
+}
+
+p { color:var(--ink2); margin-bottom:14px; }
+strong { color:var(--ink); }
+em { color:var(--accent); font-style:italic; }
+
+/* ── two-column layout ── */
+.two-col {
+  display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:start;
+  margin: 28px 0;
+}
+@media(max-width:700px){ .two-col{grid-template-columns:1fr;} }
+
+/* ── canvas card ── */
+.cv-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:10px; padding:20px; text-align:center;
+  box-shadow:0 2px 12px rgba(0,0,0,0.07);
+}
+.cv-card-label {
+  font-family:'IBM Plex Mono',monospace; font-size:10px;
+  letter-spacing:3px; text-transform:uppercase; color:var(--muted);
+  margin-bottom:10px;
+}
+.cv-card canvas { display:block; margin:0 auto; }
+.cv-card-sub {
+  font-family:'IBM Plex Mono',monospace; font-size:10px;
+  color:var(--muted); margin-top:8px;
+}
+
+/* ── callout ── */
+.callout {
+  background:var(--card); border-left:4px solid var(--accent);
+  padding:16px 20px; margin:24px 0; border-radius:0 8px 8px 0;
+  box-shadow:0 1px 6px rgba(0,0,0,0.06);
+}
+.callout.blue  { border-color:var(--blue); }
+.callout.green { border-color:var(--green); }
+.callout.amber { border-color:var(--amber); }
+.callout .ct {
+  font-family:'IBM Plex Mono',monospace; font-size:10px;
+  letter-spacing:2px; text-transform:uppercase;
+  color:var(--accent); margin-bottom:6px; font-weight:600;
+}
+.callout.blue  .ct { color:var(--blue); }
+.callout.green .ct { color:var(--green); }
+.callout.amber .ct { color:var(--amber); }
+.callout p { font-size:15px; margin:0; color:var(--ink2); }
+
+/* ── big formula display ── */
+.formula {
+  background:var(--ink); color:#f0e8d8;
+  font-family:'IBM Plex Mono',monospace; font-size:14px;
+  padding:18px 24px; border-radius:8px; margin:20px 0;
+  line-height:2; overflow-x:auto;
+}
+.formula .hi  { color:#f0c060; font-weight:600; }
+.formula .dim { color:#888; }
+
+/* ── KERNEL GRID ── */
+.kernel-grid-wrap { display:inline-block; }
+.kernel-grid {
+  display:inline-grid; grid-template-columns:repeat(3,1fr);
+  gap:3px; background:var(--border); border:2px solid var(--border);
+  border-radius:6px; overflow:hidden;
+}
+.kc {
+  width:56px; height:56px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600;
+  transition:background .3s;
+}
+.kc .kv { font-size:16px; font-weight:700; }
+.kc .km { font-size:9px; opacity:0.6; margin-top:1px; font-weight:400; }
+
+/* pos/neg/zero colour */
+.kc.pos { background:#d4f0d4; color:var(--pos); }
+.kc.neg { background:#f4d4d4; color:var(--neg); }
+.kc.zer { background:#f0ece4; color:var(--zero); }
+.kc.highlight { outline:3px solid var(--accent); z-index:1; }
+
+/* ── PIXEL GRID ── */
+.pixel-grid {
+  display:inline-grid; gap:1px;
+  background:var(--border); border:2px solid var(--border);
+  border-radius:6px; overflow:hidden;
+}
+.px {
+  display:flex; align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+  transition:outline .2s, transform .2s;
+}
+.px.in-window { outline:3px solid var(--accent); z-index:1; }
+
+/* ── COMPUTATION TABLE ── */
+.comp-table {
+  width:100%; border-collapse:collapse; font-family:'IBM Plex Mono',monospace;
+  font-size:13px; margin:16px 0;
+}
+.comp-table th {
+  background:var(--ink); color:#e8e0d0;
+  padding:8px 12px; text-align:left; font-weight:600;
+  font-size:11px; letter-spacing:1px;
+}
+.comp-table td { padding:8px 12px; border-bottom:1px solid var(--border); color:var(--ink2); }
+.comp-table tr.total td { border-top:2px solid var(--ink); font-weight:700; color:var(--ink); background:#f8f5ef; }
+.comp-table td.pos { color:var(--pos); }
+.comp-table td.neg { color:var(--neg); }
+.comp-table td.zer { color:var(--muted); }
+
+/* ── STEP CONTROLS ── */
+.step-controls {
+  display:flex; gap:10px; align-items:center; margin:20px 0; flex-wrap:wrap;
+}
+.sbtn {
+  font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+  padding:9px 20px; border-radius:6px; border:1.5px solid var(--border);
+  background:var(--card); color:var(--muted); cursor:pointer;
+  transition:all .15s; letter-spacing:.5px;
+}
+.sbtn:hover { border-color:var(--accent); color:var(--accent); }
+.sbtn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+.sbtn.primary:hover { background:#a02020; }
+.sbtn:disabled { opacity:.4; cursor:not-allowed; }
+
+.step-info {
+  font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);
+}
+
+/* ── COMPARISON ROW ── */
+.compare-row {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:16px; margin:28px 0;
+}
+
+/* ── FEATURE HIERARCHY ── */
+.hier-row {
+  display:flex; align-items:center; gap:0; margin:20px 0;
+  overflow-x:auto; padding-bottom:4px;
+}
+.hier-item {
+  flex-shrink:0; text-align:center;
+}
+.hier-item canvas { display:block; margin:0 auto 6px; }
+.hier-arrow {
+  flex-shrink:0; font-size:24px; color:var(--muted);
+  padding:0 8px; margin-top:-20px;
+}
+.hier-label {
+  font-family:'IBM Plex Mono',monospace; font-size:10px;
+  color:var(--muted); letter-spacing:1px; text-transform:uppercase;
+}
+.hier-sublabel {
+  font-family:'IBM Plex Mono',monospace; font-size:9px;
+  color:var(--accent); margin-top:2px;
+}
+
+/* ── FILTER SELECTOR ── */
+.filter-tabs {
+  display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px;
+}
+.ftab {
+  font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+  padding:6px 14px; border-radius:4px; border:1.5px solid var(--border);
+  background:var(--card); color:var(--muted); cursor:pointer;
+  transition:all .15s;
+}
+.ftab:hover { border-color:var(--accent); color:var(--accent); }
+.ftab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+/* ── big number callout ── */
+.big-num {
+  font-family:'Syne',sans-serif; font-size:48px; font-weight:800;
+  line-height:1; color:var(--accent);
+}
+.big-label {
+  font-family:'IBM Plex Mono',monospace; font-size:11px;
+  color:var(--muted); letter-spacing:2px; text-transform:uppercase;
+  margin-top:4px;
+}
+
+/* ── activation bar ── */
+.act-bar-wrap { margin:6px 0; }
+.act-bar-track {
+  height:20px; background:#e8e4de; border-radius:3px; overflow:hidden;
+  border:1px solid var(--border);
+}
+.act-bar-fill {
+  height:100%; display:flex; align-items:center; padding-left:6px;
+  font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600;
+  color:#fff; border-radius:3px; transition:width .9s ease;
+}
+.act-bar-lbl {
+  font-family:'IBM Plex Mono',monospace; font-size:11px;
+  color:var(--ink2); margin-bottom:3px;
+}
+
+footer {
+  text-align:center; padding:40px; border-top:1px solid var(--border);
+  background:var(--card);
+  font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted);
+}
+footer b { color:var(--accent); }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div class="topbar">
+  <span>CSC-4315 · Introduction to AI</span>
+  <span><b>Interactive Demo</b> — How a CNN Sees a Face</span>
+  <span>IUGB · Spring 2026</span>
+</div>
+
+<!-- ═══════════════════════════════════
+     CH 1 · THE QUESTION
+     ═══════════════════════════════════ -->
+<div class="chapter" id="ch0">
+  <div class="chapter-num">Chapter <b>1 of 6</b></div>
+  <h2>What does <em>"seeing"</em> mean<br>for a computer?</h2>
+  <p class="lead">A human looks at this image and instantly recognises a face. A CNN cannot do that — at least not at first. What it <em>can</em> do is arithmetic. The entire story of how a CNN goes from pixels to recognition is a story of arithmetic applied repeatedly, in layers.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="cv-card">
+        <div class="cv-card-label">The Input — What We See</div>
+        <canvas id="faceCanvas" width="200" height="240"></canvas>
+        <div class="cv-card-sub">A portrait — shapes, colour, light, structure.</div>
+      </div>
+    </div>
+    <div>
+      <div class="cv-card">
+        <div class="cv-card-label">The Input — What the CNN Sees</div>
+        <canvas id="pixelZoomCanvas" width="200" height="240"></canvas>
+        <div class="cv-card-sub" id="pixelZoomSub">200 × 240 × 3 = 144,000 integers</div>
+      </div>
+      <div class="step-controls" style="justify-content:center;">
+        <button class="sbtn primary" id="btnRevealPixels">Show me the numbers →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="ct">🔑 The Core Idea</div>
+    <p>There is no "face" stored anywhere in the CNN. There are only matrices of numbers being transformed by other matrices of numbers. Recognition emerges from the structure of those transformations — learned entirely from data.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     CH 2 · THE FILTER
+     ═══════════════════════════════════ -->
+<div class="chapter" id="ch1">
+  <div class="chapter-num">Chapter <b>2 of 6</b></div>
+  <h2>The <em>filter</em> — a question<br>in matrix form</h2>
+  <p class="lead">A CNN filter (also called a kernel) is a tiny 3×3 grid of weights. It encodes one question: <em>"Does this particular pattern exist at this location?"</em> The weights determine what pattern it looks for.</p>
+
+  <div class="two-col">
+    <div>
+      <p>The filter below is the <strong>Sobel vertical-edge detector</strong>. Look at its weight pattern carefully:</p>
+      <div style="text-align:center; margin:24px 0;">
+        <div class="kernel-grid-wrap">
+          <div class="cv-card-label" style="margin-bottom:10px;">Sobel X — Vertical Edge Filter</div>
+          <div class="kernel-grid" id="kernelDisplay"></div>
+        </div>
+      </div>
+      <p>The <span style="color:var(--pos);font-weight:700;">green (+2)</span> column asks: "is the right side bright?" The <span style="color:var(--neg);font-weight:700;">red (−2)</span> column asks: "is the left side dark?" When the answer to <em>both</em> is yes, a strong positive output fires — a vertical edge detected.</p>
+    </div>
+    <div>
+      <div class="callout amber">
+        <div class="ct">📐 Reading the Kernel</div>
+        <p><strong>Positive weights</strong> (green): the filter rewards bright pixels in these positions.<br><strong>Negative weights</strong> (red): the filter is penalised by bright pixels here.<br><strong>Zero</strong> (grey): these positions are ignored.</p>
+      </div>
+      <div class="callout blue" style="margin-top:16px;">
+        <div class="ct">💡 What each kernel detects</div>
+        <p>The filter's "answer" is highest when the input patch <em>matches</em> the filter's weight pattern — when bright pixels align with positive weights and dark pixels align with negative weights.</p>
+      </div>
+
+      <div class="filter-tabs" id="filterTabs" style="margin-top:20px;"></div>
+      <div id="filterExplain" style="font-size:14px; color:var(--ink2);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     CH 3 · THE COMPUTATION
+     ═══════════════════════════════════ -->
+<div class="chapter" id="ch2">
+  <div class="chapter-num">Chapter <b>3 of 6</b></div>
+  <h2>One step of convolution —<br><em>the actual arithmetic</em></h2>
+  <p class="lead">We will now zoom into the <strong>eye region</strong> of the face and watch the filter compute its output at a single position. This is the operation that happens thousands of times to produce one feature map.</p>
+
+  <div class="callout">
+    <div class="ct">What is happening</div>
+    <p>The 3×3 filter is placed over a 3×3 patch of the image. Each filter weight is multiplied by the corresponding pixel value. The 9 products are summed. That sum is the output value at this position. Step through the calculation below.</p>
+  </div>
+
+  <div class="two-col" style="align-items:start;">
+    <div>
+      <div class="cv-card">
+        <div class="cv-card-label">Eye Region — Pixel Values</div>
+        <canvas id="patchCanvas" width="210" height="210"></canvas>
+        <div class="cv-card-sub">7×7 crop · actual grayscale values · filter window shown in red</div>
+      </div>
+    </div>
+    <div>
+      <div class="cv-card" style="margin-bottom:16px;">
+        <div class="cv-card-label">Filter Weights × Patch Values</div>
+        <canvas id="multCanvas" width="210" height="140"></canvas>
+        <div class="cv-card-sub" id="multSub">Press "Step" to begin the calculation</div>
+      </div>
+
+      <div class="step-controls">
+        <button class="sbtn primary" id="btnStepCalc">Step ▶</button>
+        <button class="sbtn" id="btnAutoCalc">Auto-play</button>
+        <button class="sbtn" id="btnResetCalc">↺ Reset</button>
+        <span class="step-info" id="calcStepInfo">Step 0 / 9</span>
+      </div>
+
+      <div id="compTableWrap"></div>
+
+      <div id="finalResultWrap" style="display:none; margin-top:16px;">
+        <div style="text-align:center;">
+          <div class="big-num" id="finalResultNum">0</div>
+          <div class="big-label">Output Value at This Position</div>
+          <div style="font-size:14px; color:var(--ink2); margin-top:8px;" id="finalResultInterp"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     CH 4 · FULL SCAN
+     ═══════════════════════════════════ -->
+<div class="chapter" id="ch3">
+  <div class="chapter-num">Chapter <b>4 of 6</b></div>
+  <h2>Scanning the whole face —<br><em>building the feature map</em></h2>
+  <p class="lead">The filter does not run once. It slides to every position in the image — top-left to bottom-right — repeating that 9-multiply-and-sum operation at each location. The result is a complete <strong>feature map</strong>: a new image where each pixel's brightness represents how strongly that filter fired at that location.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="cv-card">
+        <div class="cv-card-label">Input Image</div>
+        <canvas id="scanInputCanvas" width="200" height="240"></canvas>
+        <div class="cv-card-sub">The filter window is shown scanning in red.</div>
+      </div>
+    </div>
+    <div>
+      <div class="cv-card">
+        <div class="cv-card-label">Feature Map (building)</div>
+        <canvas id="scanOutputCanvas" width="200" height="240"></canvas>
+        <div class="cv-card-sub" id="scanSub">Bright = strong edge detected · Dark = no edge</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-controls" style="justify-content:center; margin-top:8px;">
+    <button class="sbtn primary" id="btnStartScan">▶ Animate Full Scan</button>
+    <button class="sbtn" id="btnSkipScan">Skip to Result</button>
+    <div class="speed-wrap" style="display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);">
+      Speed <input type="range" id="scanSpeed" min="1" max="12" value="6" style="width:70px;accent-color:var(--accent);"> <span id="scanSpeedLbl">6×</span>
+    </div>
+  </div>
+
+  <div id="scanInterpBox" style="margin-top:24px; display:none;">
+    <div class="callout green">
+      <div class="ct">✓ Scan complete — reading the feature map</div>
+      <p id="scanInterpText"></p>
+    </div>
+  </div>
+
+  <div class="filter-tabs" id="filterTabs2" style="margin-top:28px;"></div>
+  <div style="font-size:13px; color:var(--muted); font-family:'IBM Plex Mono',monospace; margin-bottom:12px;">Switch filter to see how each one detects a different property of the same face.</div>
+</div>
+
+<!-- ═══════════════════════════════════
+     CH 5 · MULTIPLE FILTERS
+     ═══════════════════════════════════ -->
+<div class="chapter" id="ch4">
+  <div class="chapter-num">Chapter <b>5 of 6</b></div>
+  <h2>32 filters in parallel —<br><em>a bank of detectors</em></h2>
+  <p class="lead">In a real CNN, the first layer runs not one filter but <strong>32 (or 64) filters simultaneously</strong>, each looking for a different pattern. Together they produce 32 feature maps — one per filter. Each map answers a different question about the same image.</p>
+
+  <div class="callout amber">
+    <div class="ct">📌 Each feature map = one detector's answer</div>
+    <p>Below are 8 filters applied to the same face. Notice that each map looks completely different — because each filter asks a completely different question. The bright regions in each map show <em>where</em> that filter's pattern was found.</p>
+  </div>
+
+  <div class="compare-row" id="filterBankRow"></div>
+
+  <div style="margin-top:28px;">
+    <p><strong>What the network is accumulating:</strong> By the end of the first layer, for every position in the image, the network has 32 numbers — each describing a different local feature at that location. The image has gone from 3 channels (RGB) to <em>32 channels</em> of learned descriptions.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     CH 6 · THE HIERARCHY
+     ═══════════════════════════════════ -->
+<div class="chapter" id="ch5">
+  <div class="chapter-num">Chapter <b>6 of 6</b></div>
+  <h2>Layer by layer —<br><em>from edges to a face</em></h2>
+  <p class="lead">Here is the complete journey. Each layer takes the <em>previous layer's output</em> as its input — not the original image. This means later layers detect patterns in patterns, building an increasingly abstract and structured understanding.</p>
+
+  <div class="hier-row" id="hierRow"></div>
+
+  <div style="margin-top:32px;">
+    <div class="callout">
+      <div class="ct">🎯 Why this works for faces</div>
+      <p>Layer 1 detects <strong>edges</strong> — the eye socket boundary, the chin line, the lip edge. Layer 2 detects <strong>curves and junctions</strong> — where those edges meet, forming arcs like an eyebrow or a nostril curve. Layer 3 detects <strong>parts</strong> — a detector whose receptive field spans the full eye region fires when it sees: a curved arc above two white ellipses flanking a dark circle. This is what an eye <em>is</em>, expressed mathematically.</p>
+    </div>
+  </div>
+
+  <!-- ReLU explanation -->
+  <h3 style="font-family:'Syne',sans-serif; font-weight:800; margin-top:36px; font-size:22px;">Why we apply ReLU after each layer</h3>
+  <div class="two-col" style="margin-top:16px;">
+    <div>
+      <p>After each convolution, every value is passed through <strong>ReLU: max(0, x)</strong>. This zeroes out negative values. The result: only the positions where a filter <em>positively matched</em> survive. Positions where the pattern was absent (negative output) become zero — silence.</p>
+      <div class="formula">
+        output = <span class="hi">max( 0,  Σ pixel × weight )</span><br>
+        <span class="dim">if the filter found the pattern → positive → kept<br>if the filter found nothing    → negative → zeroed</span>
+      </div>
+    </div>
+    <div>
+      <div class="cv-card">
+        <div class="cv-card-label">Before vs. After ReLU</div>
+        <canvas id="reluCanvas" width="200" height="180"></canvas>
+        <div class="cv-card-sub">Left: raw edge map (with negatives) · Right: after ReLU</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confidence output -->
+  <h3 style="font-family:'Syne',sans-serif; font-weight:800; margin-top:40px; font-size:22px;">Final output — classification confidence</h3>
+  <p style="margin-bottom:20px;">After several layers of Conv+ReLU+Pool, the feature maps are flattened into a vector and passed through a fully-connected layer with softmax. The output is a probability for each class.</p>
+
+  <div id="confBars" style="max-width:480px;"></div>
+
+  <div class="callout green" style="margin-top:28px;">
+    <div class="ct">✓ The complete pipeline</div>
+    <p><strong>Raw pixels</strong> → Conv1 (edges) → ReLU → Pool → Conv2 (textures/curves) → ReLU → Pool → Conv3 (parts) → Flatten → Dense → <strong>Softmax output</strong>. Every arrow is a matrix multiplication and non-linearity. No hand-crafted features anywhere.</p>
+  </div>
+
+  <div style="margin-top:40px; padding:28px; background:var(--card); border:1px solid var(--border); border-radius:8px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-bottom:14px;">Discussion Questions</div>
+    <ol style="padding-left:20px; color:var(--ink2); display:flex; flex-direction:column; gap:12px; font-size:15px; line-height:1.7;">
+      <li>In Chapter 3, the Sobel X filter fires strongly at the left edge of the eye. What property of the pixel patch caused this? Draw the pixel values that would produce the <em>maximum possible</em> output for that filter.</li>
+      <li>The Gaussian blur filter has all positive weights summing to 1. What is the output when applied to a completely uniform patch (all pixels the same value)? What does this tell you about what blur actually does?</li>
+      <li>A CNN trained on photos of cars is used to classify X-ray images. The first 2 layers are frozen (weights unchanged). The last layer is retrained. Which features from the car network — if any — might still be useful for X-rays? Which ones definitely are not?</li>
+      <li>After ReLU, all negative activations become zero. A student argues: "This throws away information — the network should keep negative values." Construct a counter-argument explaining why zeroing negatives is actually beneficial.</li>
+    </ol>
+  </div>
+</div>
+
+<footer>
+  CSC-4315 · Introduction to AI &nbsp;·&nbsp; <b>Computer Vision Interactive Demo</b><br>
+  International University of Grand-Bassam · School of Science and Engineering · Spring 2026
+</footer>
+
+<!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT
+     ══════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── progress bar ── */
+window.addEventListener('scroll', () => {
+  document.getElementById('progress').style.width =
+    (window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100) + '%';
+});
+
+/* ── section reveal ── */
+const chapters = document.querySelectorAll('.chapter');
+const obs = new IntersectionObserver(e => e.forEach(entry => {
+  if (entry.isIntersecting) entry.target.classList.add('visible');
+}), { threshold: 0.07 });
+chapters.forEach(c => obs.observe(c));
+
+/* ══════════ FACE DRAWING ══════════ */
+const FW = 200, FH = 240;
+
+function drawFace(ctx, W, H) {
+  ctx.clearRect(0, 0, W, H);
+  const bgGrad = ctx.createLinearGradient(0,0,W,H);
+  bgGrad.addColorStop(0,'#cec2a8'); bgGrad.addColorStop(1,'#b8a888');
+  ctx.fillStyle=bgGrad; ctx.fillRect(0,0,W,H);
+  const cx=W/2, headCY=H*.46, rx=W*.30, ry=H*.35;
+
+  // neck
+  ctx.fillStyle='#c8985a';
+  ctx.beginPath(); ctx.ellipse(cx,H*.90,rx*.22,H*.12,0,0,Math.PI*2); ctx.fill();
+
+  // hair back
+  ctx.fillStyle='#28180a';
+  ctx.beginPath(); ctx.ellipse(cx,headCY-ry*.28,rx*1.12,ry*1.08,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx-rx*.9,headCY+ry*.15,rx*.22,ry*.55,-0.15,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+rx*.9,headCY+ry*.15,rx*.22,ry*.55,0.15,0,Math.PI*2); ctx.fill();
+
+  // face
+  const sg = ctx.createRadialGradient(cx,headCY-ry*.1,0,cx,headCY,rx*1.3);
+  sg.addColorStop(0,'#f0c890'); sg.addColorStop(.5,'#e8b878'); sg.addColorStop(1,'#d4985a');
+  ctx.fillStyle=sg;
+  ctx.beginPath(); ctx.ellipse(cx,headCY,rx,ry,0,0,Math.PI*2); ctx.fill();
+
+  // ears
+  [cx-rx*.97,cx+rx*.97].forEach((ex,si)=>{
+    ctx.fillStyle='#dfa060';
+    ctx.beginPath(); ctx.ellipse(ex,headCY+ry*.06,rx*.10,ry*.14,si===0?-.2:.2,0,Math.PI*2);
+    ctx.fill(); ctx.strokeStyle='#c08848'; ctx.lineWidth=.8; ctx.stroke();
+  });
+
+  // hairline
+  ctx.fillStyle='#28180a';
+  ctx.beginPath();
+  ctx.moveTo(cx-rx*.95,headCY-ry*.72);
+  ctx.quadraticCurveTo(cx,headCY-ry*.98,cx+rx*.95,headCY-ry*.72);
+  ctx.quadraticCurveTo(cx+rx*1.05,headCY-ry*.55,cx+rx,headCY-ry*.5);
+  ctx.quadraticCurveTo(cx+rx*.85,headCY-ry*.75,cx,headCY-ry*.97);
+  ctx.quadraticCurveTo(cx-rx*.85,headCY-ry*.75,cx-rx,headCY-ry*.5);
+  ctx.quadraticCurveTo(cx-rx*1.05,headCY-ry*.55,cx-rx*.95,headCY-ry*.72);
+  ctx.closePath(); ctx.fill();
+
+  const eyeY=headCY-ry*.12, eyeOX=rx*.38;
+
+  function drawEye(ex,ey){
+    // eyebrow
+    ctx.strokeStyle='#38200f'; ctx.lineWidth=2.2; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(ex-18,ey-18); ctx.quadraticCurveTo(ex,ey-22,ex+18,ey-16); ctx.stroke();
+    // white
+    ctx.fillStyle='#f8f4ee';
+    ctx.beginPath(); ctx.ellipse(ex,ey,17,10,0,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#a08060'; ctx.lineWidth=.8; ctx.stroke();
+    // iris
+    const ig=ctx.createRadialGradient(ex-2,ey-2,0,ex,ey,9);
+    ig.addColorStop(0,'#5a7a9a'); ig.addColorStop(.6,'#3a5a70'); ig.addColorStop(1,'#1a2a40');
+    ctx.fillStyle=ig;
+    ctx.beginPath(); ctx.arc(ex,ey,9,0,Math.PI*2); ctx.fill();
+    // pupil
+    ctx.fillStyle='#080808';
+    ctx.beginPath(); ctx.arc(ex,ey,5,0,Math.PI*2); ctx.fill();
+    // highlights
+    ctx.fillStyle='rgba(255,255,255,.85)';
+    ctx.beginPath(); ctx.arc(ex+3,ey-3,2.5,0,Math.PI*2); ctx.fill();
+    // lid
+    ctx.strokeStyle='#38200f'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(ex-17,ey-1); ctx.quadraticCurveTo(ex,ey-12,ex+17,ey-1); ctx.stroke();
+    // lashes
+    ctx.strokeStyle='#181010'; ctx.lineWidth=1;
+    for(let l=-3;l<=3;l++){
+      const lx=ex+l*5, ly=ey-Math.sqrt(Math.max(0,81-(l*5)**2))+1;
+      ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(lx+l*1.2,ly-4-Math.abs(l)*.5); ctx.stroke();
+    }
+  }
+  drawEye(cx-eyeOX,eyeY); drawEye(cx+eyeOX,eyeY);
+
+  // nose
+  const nX=cx, nTopY=eyeY+20, nBotY=eyeY+52;
+  ctx.strokeStyle='rgba(150,90,30,.22)'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(cx-eyeOX*.55,nTopY); ctx.quadraticCurveTo(nX-8,nBotY-8,nX-12,nBotY+2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+eyeOX*.55,nTopY); ctx.quadraticCurveTo(nX+8,nBotY-8,nX+12,nBotY+2); ctx.stroke();
+  const ntg=ctx.createRadialGradient(nX,nBotY+2,0,nX,nBotY+2,14);
+  ntg.addColorStop(0,'#e8a870'); ntg.addColorStop(1,'#c88050');
+  ctx.fillStyle=ntg;
+  ctx.beginPath(); ctx.ellipse(nX,nBotY+4,13,9,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#8a4820';
+  ctx.beginPath(); ctx.ellipse(nX-11,nBotY+6,5,3.5,-.3,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(nX+11,nBotY+6,5,3.5,.3,0,Math.PI*2); ctx.fill();
+
+  // mouth
+  const mY=eyeY+ry*.62, mW=rx*.55;
+  ctx.fillStyle='#c07060';
+  ctx.beginPath();
+  ctx.moveTo(cx-mW,mY); ctx.quadraticCurveTo(cx-mW*.5,mY-5,cx-mW*.2,mY-2);
+  ctx.quadraticCurveTo(cx,mY-8,cx+mW*.2,mY-2); ctx.quadraticCurveTo(cx+mW*.5,mY-5,cx+mW,mY);
+  ctx.quadraticCurveTo(cx+mW*.6,mY+2,cx,mY+3); ctx.quadraticCurveTo(cx-mW*.6,mY+2,cx-mW,mY);
+  ctx.closePath(); ctx.fill();
+  const lg=ctx.createLinearGradient(cx,mY+2,cx,mY+20);
+  lg.addColorStop(0,'#d08070'); lg.addColorStop(.5,'#e09080'); lg.addColorStop(1,'#c07060');
+  ctx.fillStyle=lg;
+  ctx.beginPath(); ctx.moveTo(cx-mW*.9,mY+3); ctx.quadraticCurveTo(cx,mY+3,cx+mW*.9,mY+3);
+  ctx.quadraticCurveTo(cx+mW*.7,mY+18,cx,mY+18); ctx.quadraticCurveTo(cx-mW*.7,mY+18,cx-mW*.9,mY+3); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#8a3020'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(cx-mW*.9,mY+3); ctx.quadraticCurveTo(cx,mY+5,cx+mW*.9,mY+3); ctx.stroke();
+
+  // cheek blush
+  [[cx-rx*.55,eyeY+ry*.45],[cx+rx*.55,eyeY+ry*.45]].forEach(([bx,by])=>{
+    const bg=ctx.createRadialGradient(bx,by,0,bx,by,22);
+    bg.addColorStop(0,'rgba(220,100,80,.18)'); bg.addColorStop(1,'transparent');
+    ctx.fillStyle=bg; ctx.beginPath(); ctx.arc(bx,by,22,0,Math.PI*2); ctx.fill();
+  });
+}
+
+/* ══════════ GRAYSCALE & CONVOLUTION ══════════ */
+function toGray(data, W, H) {
+  const g = new Float32Array(W*H);
+  for (let i=0;i<W*H;i++) g[i]=.299*data[i*4]+.587*data[i*4+1]+.114*data[i*4+2];
+  return g;
+}
+
+function convolve(gray, W, H, K) {
+  const out = new Float32Array(W*H);
+  let mn=Infinity, mx=-Infinity;
+  for(let y=1;y<H-1;y++) for(let x=1;x<W-1;x++) {
+    let s=0;
+    for(let ky=-1;ky<=1;ky++) for(let kx=-1;kx<=1;kx++)
+      s += gray[(y+ky)*W+(x+kx)] * K[(ky+1)*3+(kx+1)];
+    out[y*W+x]=s; if(s<mn) mn=s; if(s>mx) mx=s;
+  }
+  if(mx>mn) for(let i=0;i<out.length;i++) out[i]=(out[i]-mn)/(mx-mn)*255;
+  return out;
+}
+
+function putGray(cv, gray, W, H, colFn) {
+  const ctx=cv.getContext('2d');
+  const off=document.createElement('canvas'); off.width=W; off.height=H;
+  const oc=off.getContext('2d');
+  const id=oc.createImageData(W,H);
+  let mn=Infinity,mx=-Infinity;
+  for(let i=0;i<gray.length;i++){if(gray[i]<mn)mn=gray[i];if(gray[i]>mx)mx=gray[i];}
+  for(let i=0;i<W*H;i++){
+    const v=mn===mx?128:Math.round((gray[i]-mn)/(mx-mn)*255);
+    const [r,g,b]=colFn?colFn(v):[v,v,v];
+    id.data[i*4]=r; id.data[i*4+1]=g; id.data[i*4+2]=b; id.data[i*4+3]=255;
+  }
+  oc.putImageData(id,0,0);
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.drawImage(off,0,0,cv.width,cv.height);
+}
+
+/* ══════════ FILTER BANK ══════════ */
+const FILTERS = [
+  { name:'Vertical Edge',    short:'V-Edge',  K:[-1,0,1,-2,0,2,-1,0,1],
+    desc:'Fires at left-dark / right-bright boundaries. Strong along the sides of the nose and the inner eye corners.',
+    col:v=>[v,Math.round(v*.9),0] },
+  { name:'Horizontal Edge',  short:'H-Edge',  K:[-1,-2,-1,0,0,0,1,2,1],
+    desc:'Fires at top-dark / bottom-bright transitions. Strong along the top of the eyebrows and the lower lip.',
+    col:v=>[0,Math.round(v*.6),v] },
+  { name:'Diagonal Edge ↗',  short:'Diag',    K:[-1,-1,0,-1,0,1,0,1,1],
+    desc:'Fires at diagonal transitions. Detects the slanted edge of the chin and angled hair boundaries.',
+    col:v=>[Math.round(v*.7),v,Math.round(v*.4)] },
+  { name:'Gaussian Blur',    short:'Blur',    K:[1/16,2/16,1/16,2/16,4/16,2/16,1/16,2/16,1/16],
+    desc:'Smooths the image by averaging neighbours. Reduces noise. Often applied before edge detection.',
+    col:v=>[Math.round(v*.6),Math.round(v*.5),v] },
+  { name:'Laplacian',        short:'Laplace', K:[0,1,0,1,-4,1,0,1,0],
+    desc:'Detects ALL edges regardless of orientation. Very sensitive — picks up fine texture like hair strands.',
+    col:v=>[v,Math.round(v*.4),Math.round(v*.4)] },
+  { name:'Sharpen',          short:'Sharpen', K:[0,-1,0,-1,5,-1,0,-1,0],
+    desc:'Enhances centre pixel relative to neighbours. Accentuates fine detail — eyelashes, hair texture.',
+    col:v=>[v,Math.round(v*.5),Math.round(v*.8)] },
+];
+
+/* ══════════ STATE ══════════ */
+let faceImg = null;
+let faceGray = null;
+let convCache = {};
+
+let activeFilterIdx = 0;
+let scanFilterIdx   = 0;
+let scanAnimId = null;
+let scanPos = 0;
+let scanRunning = false;
+let calcStep = 0;
+let calcAutoId = null;
+
+const PATCH_REGION = { x: 40, y: 52, w: 7, h: 7 }; // 7×7 eye region crop
+
+/* ══════════ CHAPTER 1 ══════════ */
+(function initCh1() {
+  const faceCv = document.getElementById('faceCanvas');
+  const ctx = faceCv.getContext('2d');
+  drawFace(ctx, FW, FH);
+  faceImg = faceCv;
+
+  // Cache grayscale
+  const imgData = ctx.getImageData(0,0,FW,FH);
+  faceGray = toGray(imgData.data, FW, FH);
+
+  // Pre-compute all convolutions
+  FILTERS.forEach((f,i) => { convCache[i] = convolve(faceGray, FW, FH, f.K); });
+
+  // "pixel view" canvas — shows face then zooms into grid
+  const pzCv = document.getElementById('pixelZoomCanvas');
+  const pzCtx = pzCv.getContext('2d');
+  pzCtx.drawImage(faceCv, 0, 0);
+
+  let revealed = false;
+  document.getElementById('btnRevealPixels').addEventListener('click', function() {
+    if (revealed) return;
+    revealed = true;
+    this.textContent = '✓ These are the only numbers the CNN ever sees.';
+    this.classList.remove('primary'); this.disabled = true;
+
+    // Draw pixel grid of a 20×24 region (scaled up)
+    pzCtx.clearRect(0,0,200,240);
+    pzCtx.fillStyle='#111'; pzCtx.fillRect(0,0,200,240);
+    const gx=20, gy=20, cellW=8, cellH=8;
+    for(let r=0;r<gx;r++) for(let c=0;c<gx;c++) {
+      const px = Math.round(r/gx*FW), py = Math.round(c/gx*FH);
+      const v = Math.round(faceGray[py*FW+px]);
+      pzCtx.fillStyle=`rgb(${v},${v},${v})`;
+      pzCtx.fillRect(c*cellW, r*cellH, cellW-1, cellH-1);
+    }
+    // overlay actual numbers for a 5×5 region
+    pzCtx.fillStyle='rgba(0,0,0,.55)';
+    pzCtx.fillRect(0,0,200,240);
+    pzCtx.fillStyle='rgba(0,0,0,.55)'; pzCtx.fillRect(0,0,200,240);
+    const nx=8,ny=10;
+    for(let r=0;r<ny;r++) for(let c=0;c<nx;c++){
+      const px=Math.round(c/nx*FW), py=Math.round(r/ny*FH);
+      const v=Math.round(faceGray[py*FW+px]);
+      pzCtx.fillStyle=`rgb(${v},${v},${v})`;
+      pzCtx.fillRect(c*24+1, r*23+1, 22, 21);
+      pzCtx.fillStyle= v>128?'#000':'#fff';
+      pzCtx.font='bold 9px IBM Plex Mono,monospace';
+      pzCtx.textAlign='center'; pzCtx.textBaseline='middle';
+      pzCtx.fillText(v, c*24+12, r*23+12);
+    }
+    document.getElementById('pixelZoomSub').textContent = '20×24 sample — each cell = one grayscale integer [0–255]';
+  });
+})();
+
+/* ══════════ CHAPTER 2 — KERNEL DISPLAY ══════════ */
+(function initCh2() {
+  function renderKernel(idx) {
+    const K = FILTERS[idx].K;
+    const grid = document.getElementById('kernelDisplay');
+    grid.innerHTML = '';
+    K.forEach((v,i) => {
+      const cell = document.createElement('div');
+      cell.className = 'kc ' + (v>0?'pos':v<0?'neg':'zer');
+      const dispV = Number.isInteger(v) ? v : v.toFixed(2);
+      cell.innerHTML = `<span class="kv">${v>0?'+':''}${dispV}</span>`;
+      grid.appendChild(cell);
+    });
+    document.getElementById('filterExplain').innerHTML =
+      `<p><strong>${FILTERS[idx].name}:</strong> ${FILTERS[idx].desc}</p>`;
+  }
+
+  const tabs = document.getElementById('filterTabs');
+  FILTERS.forEach((f,i) => {
+    const t = document.createElement('div');
+    t.className='ftab'+(i===0?' active':'');
+    t.textContent = f.short;
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('#filterTabs .ftab').forEach(ft=>ft.classList.remove('active'));
+      t.classList.add('active');
+      activeFilterIdx=i;
+      renderKernel(i);
+    });
+    tabs.appendChild(t);
+  });
+  renderKernel(0);
+})();
+
+/* ══════════ CHAPTER 3 — STEP-THROUGH CALC ══════════ */
+(function initCh3() {
+  // Extract 7×7 patch from grayscale around eye
+  const { x:px, y:py, w:pw, h:ph } = PATCH_REGION;
+  const patchVals = [];
+  for(let r=0;r<ph;r++) {
+    const row=[];
+    for(let c=0;c<pw;c++) row.push(Math.round(faceGray[(py+r)*FW+(px+c)]));
+    patchVals.push(row);
+  }
+
+  // Draw patch with pixel values
+  const patchCv = document.getElementById('patchCanvas');
+  const patchCtx = patchCv.getContext('2d');
+  const cellSz = Math.floor(210/7);
+
+  function drawPatch(windowRow, windowCol) {
+    patchCtx.clearRect(0,0,210,210);
+    for(let r=0;r<7;r++) for(let c=0;c<7;c++) {
+      const v=patchVals[r][c];
+      patchCtx.fillStyle=`rgb(${v},${v},${v})`;
+      patchCtx.fillRect(c*cellSz,r*cellSz,cellSz,cellSz);
+      const inW = (windowRow!==undefined) && (r>=windowRow&&r<windowRow+3&&c>=windowCol&&c<windowCol+3);
+      if(inW) {
+        patchCtx.fillStyle='rgba(201,64,48,.25)';
+        patchCtx.fillRect(c*cellSz,r*cellSz,cellSz,cellSz);
+      }
+      patchCtx.fillStyle=v>100?'#000':'#fff';
+      patchCtx.font=`bold ${Math.floor(cellSz*.34)}px IBM Plex Mono,monospace`;
+      patchCtx.textAlign='center'; patchCtx.textBaseline='middle';
+      patchCtx.fillText(v, c*cellSz+cellSz/2, r*cellSz+cellSz/2);
+      if(inW) {
+        patchCtx.strokeStyle='rgba(201,64,48,.9)'; patchCtx.lineWidth=1.5;
+        patchCtx.strokeRect(c*cellSz+.5,r*cellSz+.5,cellSz-1,cellSz-1);
+      }
+    }
+    // thick red outline for 3×3 window
+    if(windowRow!==undefined) {
+      patchCtx.strokeStyle='#c94030'; patchCtx.lineWidth=2.5;
+      patchCtx.strokeRect(windowCol*cellSz,windowRow*cellSz,3*cellSz,3*cellSz);
+    }
+  }
+
+  // Chosen window: top-left of patch (rows 0-2, cols 0-2) → covers edge of eye region
+  const WIN_ROW=2, WIN_COL=2;
+  const K = FILTERS[0].K; // sobel X
+
+  const patchWindow = [];
+  for(let r=0;r<3;r++) { const row=[]; for(let c=0;c<3;c++) row.push(patchVals[WIN_ROW+r][WIN_COL+c]); patchWindow.push(row); }
+
+  drawPatch(WIN_ROW, WIN_COL);
+
+  // multiplication canvas
+  const multCv = document.getElementById('multCanvas');
+  const multCtx = multCv.getContext('2d');
+  const multCellW = Math.floor(210/3), multCellH = Math.floor(140/3);
+
+  const products = [];
+  K.forEach((kv,i)=>{
+    const r=Math.floor(i/3),c=i%3;
+    products.push({ kv, pv:patchWindow[r][c], prod:kv*patchWindow[r][c], r, c });
+  });
+
+  function renderMultGrid(highlightIdx) {
+    multCtx.clearRect(0,0,210,140);
+    products.forEach((p,i)=>{
+      const x=p.c*multCellW, y=p.r*multCellH;
+      const isActive = i===highlightIdx;
+      const isDone   = i<highlightIdx;
+
+      // bg
+      multCtx.fillStyle = isActive?'#fff3e0':isDone?'#f8f5ef':'#f0ece4';
+      multCtx.fillRect(x,y,multCellW,multCellH);
+      multCtx.strokeStyle=isActive?'#c94030':'#ddd8ce';
+      multCtx.lineWidth=isActive?2:1;
+      multCtx.strokeRect(x,y,multCellW,multCellH);
+
+      if(highlightIdx===-1||isDone||isActive) {
+        // pixel val
+        const pCol=p.pv>100?'#555':'#333';
+        multCtx.fillStyle=pCol; multCtx.font=`${Math.floor(multCellH*.28)}px IBM Plex Mono,monospace`;
+        multCtx.textAlign='center'; multCtx.textBaseline='top';
+        multCtx.fillText(String(p.pv), x+multCellW/2, y+3);
+        // ×
+        multCtx.fillStyle='#aaa'; multCtx.font=`${Math.floor(multCellH*.2)}px IBM Plex Mono,monospace`;
+        multCtx.fillText('×', x+multCellW/2, y+multCellH*.38);
+        // kernel val
+        const kCol=p.kv>0?'#1a6a1a':p.kv<0?'#8a1a1a':'#555';
+        multCtx.fillStyle=kCol; multCtx.font=`bold ${Math.floor(multCellH*.28)}px IBM Plex Mono,monospace`;
+        multCtx.fillText((p.kv>0?'+':'')+p.kv, x+multCellW/2, y+multCellH*.56);
+        // product
+        if(isDone||isActive) {
+          multCtx.fillStyle=isActive?'#c94030':'#1a5fa8';
+          multCtx.font=`bold ${Math.floor(multCellH*.3)}px IBM Plex Mono,monospace`;
+          multCtx.textBaseline='bottom';
+          multCtx.fillText('='+p.prod, x+multCellW/2, y+multCellH-.5);
+        }
+      }
+    });
+  }
+  renderMultGrid(-1);
+
+  // running sum table
+  function renderCompTable(upTo) {
+    const wrap=document.getElementById('compTableWrap');
+    if(upTo<0){wrap.innerHTML='';return;}
+    const visProds=products.slice(0,upTo+1);
+    const sum=visProds.reduce((a,p)=>a+p.prod,0);
+    const pos=['top-left','top-center','top-right','mid-left','center','mid-right','bot-left','bot-center','bot-right'];
+    let rows=visProds.map((p,i)=>
+      `<tr><td>${pos[i]}</td>
+       <td>${p.pv}</td>
+       <td class="${p.kv>0?'pos':p.kv<0?'neg':'zer'}">${p.kv>0?'+':''}${p.kv}</td>
+       <td class="${p.prod>0?'pos':p.prod<0?'neg':'zer'}">${p.prod>0?'+':''}${p.prod}</td>
+      </tr>`).join('');
+    rows+=`<tr class="total">
+      <td colspan="3">Sum of all 9 products</td>
+      <td>${sum>0?'+':''}${sum}</td>
+    </tr>`;
+    wrap.innerHTML=`<table class="comp-table">
+      <tr><th>Position</th><th>Pixel</th><th>Weight</th><th>Product</th></tr>
+      ${rows}
+    </table>`;
+  }
+
+  function doStep() {
+    if(calcStep>9) return;
+    if(calcStep<=8) {
+      renderMultGrid(calcStep);
+      renderCompTable(calcStep);
+      document.getElementById('calcStepInfo').textContent=`Step ${calcStep+1} / 9`;
+      document.getElementById('multSub').textContent=
+        `Multiplying position ${calcStep+1}: pixel=${products[calcStep].pv} × weight=${products[calcStep].kv>0?'+':''}${products[calcStep].kv} = ${products[calcStep].prod}`;
+    }
+    if(calcStep===8) {
+      setTimeout(()=>{
+        const total=products.reduce((a,p)=>a+p.prod,0);
+        const norm=Math.min(255,Math.max(0,total));
+        const interp= total>60?"<strong>Strong vertical edge detected</strong> — the left side of the patch is significantly darker than the right side. This position is on the boundary of the eye's iris against the white sclera.":
+                      total>0?"<strong>Mild edge detected</strong> — a gentle left-to-right brightness gradient exists here.":
+                      "<strong>No vertical edge</strong> — brightness is roughly uniform across this patch.";
+        document.getElementById('finalResultWrap').style.display='block';
+        document.getElementById('finalResultNum').textContent=total>0?'+'+total:total;
+        document.getElementById('finalResultInterp').innerHTML=interp;
+        document.getElementById('calcStepInfo').textContent='✓ Complete';
+      },200);
+    }
+    calcStep++;
+    document.getElementById('btnStepCalc').disabled = calcStep>9;
+  }
+
+  function resetCalc() {
+    clearInterval(calcAutoId); calcAutoId=null;
+    calcStep=0;
+    renderMultGrid(-1);
+    renderCompTable(-1);
+    drawPatch(WIN_ROW,WIN_COL);
+    document.getElementById('calcStepInfo').textContent='Step 0 / 9';
+    document.getElementById('multSub').textContent='Press "Step" to begin the calculation';
+    document.getElementById('finalResultWrap').style.display='none';
+    document.getElementById('btnStepCalc').disabled=false;
+  }
+
+  document.getElementById('btnStepCalc').addEventListener('click',doStep);
+  document.getElementById('btnAutoCalc').addEventListener('click',()=>{
+    if(calcAutoId) return;
+    const step=()=>{ if(calcStep>9){clearInterval(calcAutoId);return;} doStep(); };
+    calcAutoId=setInterval(step, 900);
+  });
+  document.getElementById('btnResetCalc').addEventListener('click',resetCalc);
+})();
+
+/* ══════════ CHAPTER 4 — SCAN ANIMATION ══════════ */
+(function initCh4() {
+  const srcCv=document.getElementById('scanInputCanvas');
+  const outCv=document.getElementById('scanOutputCanvas');
+  const srcCtx=srcCv.getContext('2d');
+  const outCtx=outCv.getContext('2d');
+
+  srcCtx.drawImage(faceImg,0,0,FW,FH);
+  outCtx.fillStyle='#111'; outCtx.fillRect(0,0,FW,FH);
+
+  let curFilterIdx=0;
+
+  // filter tabs for scan
+  const tabs2=document.getElementById('filterTabs2');
+  FILTERS.forEach((f,i)=>{
+    const t=document.createElement('div');
+    t.className='ftab'+(i===0?' active':'');
+    t.textContent=f.short;
+    t.addEventListener('click',()=>{
+      if(scanRunning) stopScan();
+      document.querySelectorAll('#filterTabs2 .ftab').forEach(ft=>ft.classList.remove('active'));
+      t.classList.add('active');
+      curFilterIdx=i;
+      srcCtx.drawImage(faceImg,0,0,FW,FH);
+      outCtx.fillStyle='#111'; outCtx.fillRect(0,0,FW,FH);
+      document.getElementById('scanInterpBox').style.display='none';
+      document.getElementById('btnStartScan').disabled=false;
+    });
+    tabs2.appendChild(t);
+  });
+
+  function stopScan() {
+    if(scanAnimId){cancelAnimationFrame(scanAnimId);scanAnimId=null;}
+    scanRunning=false;
+  }
+
+  function startScan(skipToEnd) {
+    stopScan();
+    const K=FILTERS[curFilterIdx].K;
+    const filtered=convCache[curFilterIdx];
+    const colFn=FILTERS[curFilterIdx].col;
+    let mn=Infinity,mx=-Infinity;
+    for(let i=0;i<filtered.length;i++){if(filtered[i]<mn)mn=filtered[i];if(filtered[i]>mx)mx=filtered[i];}
+
+    const outBuf=new Uint8ClampedArray(FW*FH*4);
+    const speed=parseInt(document.getElementById('scanSpeed').value);
+
+    if(skipToEnd){
+      // fill everything
+      for(let i=0;i<FW*FH;i++){
+        const v=mn===mx?128:Math.round((filtered[i]-mn)/(mx-mn)*255);
+        const [r,g,b]=colFn(v);
+        outBuf[i*4]=r;outBuf[i*4+1]=g;outBuf[i*4+2]=b;outBuf[i*4+3]=255;
+      }
+      const id=outCtx.createImageData(FW,FH);
+      id.data.set(outBuf); outCtx.putImageData(id,0,0);
+      srcCtx.drawImage(faceImg,0,0,FW,FH);
+      showScanInterp(curFilterIdx);
+      return;
+    }
+
+    let pos=0;
+    const total=(FW-2)*(FH-2);
+    const pxPerFrame=Math.ceil(FW*speed*.7);
+    scanRunning=true;
+
+    function frame(){
+      for(let p=0;p<pxPerFrame&&pos<total;p++,pos++){
+        const row=Math.floor(pos/(FW-2))+1, col=(pos%(FW-2))+1;
+        const v=mn===mx?128:Math.round((filtered[row*FW+col]-mn)/(mx-mn)*255);
+        const [r,g,b]=colFn(v);
+        outBuf[(row*FW+col)*4]=r;outBuf[(row*FW+col)*4+1]=g;outBuf[(row*FW+col)*4+2]=b;outBuf[(row*FW+col)*4+3]=255;
+      }
+      const id=outCtx.createImageData(FW,FH);
+      id.data.set(outBuf); outCtx.putImageData(id,0,0);
+
+      // scan box on source
+      srcCtx.drawImage(faceImg,0,0,FW,FH);
+      if(pos<total){
+        const cur=Math.min(pos+Math.round(pxPerFrame/2),total-1);
+        const cr=Math.floor(cur/(FW-2))+1, cc=(cur%(FW-2))+1;
+        srcCtx.strokeStyle='rgba(201,64,48,.95)'; srcCtx.lineWidth=2;
+        srcCtx.strokeRect(cc-1,cr-1,3,3);
+        srcCtx.fillStyle='rgba(201,64,48,.2)';
+        srcCtx.fillRect(cc-1,cr-1,3,3);
+      }
+
+      const pct=Math.round(pos/total*100);
+      document.getElementById('scanSub').textContent=
+        pos<total?`Scanning… ${pct}%  (${pos.toLocaleString()} positions computed)`:'✓ Done';
+
+      if(pos<total) scanAnimId=requestAnimationFrame(frame);
+      else { scanRunning=false; srcCtx.drawImage(faceImg,0,0,FW,FH); showScanInterp(curFilterIdx); }
+    }
+    scanAnimId=requestAnimationFrame(frame);
+  }
+
+  function showScanInterp(idx){
+    const interps=[
+      'The <strong>bright regions</strong> mark vertical edges — the left edge of the nose, the inner eye corners, the side of the face. These are exactly where the left side is dark and the right side is bright.',
+      'The <strong>bright regions</strong> mark horizontal edges — the lower eyebrow, the top of the upper lip, the chin line. Each corresponds to a top-dark / bottom-bright transition in the original image.',
+      'The <strong>bright regions</strong> mark diagonal transitions — the angled edges of the chin and the hair outline where they slope at roughly 45°.',
+      'Blurring reduces contrast and softens boundaries. The feature map looks like a smooth, low-detail version of the original — useful for reducing noise before edge detection.',
+      'The Laplacian detects edges in <em>all</em> directions simultaneously. Notice that the hair strands, eyelashes, and fine skin texture all appear — it\'s highly sensitive to any rapid intensity change.',
+      'Sharpening emphasises pixels that differ from their neighbours. Fine detail — individual hairs, eyelash tips, lip texture — appears bright while smooth areas remain dark.',
+    ];
+    document.getElementById('scanInterpBox').style.display='block';
+    document.getElementById('scanInterpText').innerHTML=interps[idx];
+  }
+
+  document.getElementById('btnStartScan').addEventListener('click',()=>startScan(false));
+  document.getElementById('btnSkipScan').addEventListener('click',()=>startScan(true));
+  document.getElementById('scanSpeed').addEventListener('input',function(){
+    document.getElementById('scanSpeedLbl').textContent=this.value+'×';
+  });
+})();
+
+/* ══════════ CHAPTER 5 — FILTER BANK ══════════ */
+(function initCh5(){
+  const row=document.getElementById('filterBankRow');
+  FILTERS.forEach((f,i)=>{
+    const card=document.createElement('div');
+    card.className='cv-card';
+    const lbl=document.createElement('div');
+    lbl.className='cv-card-label';
+    lbl.textContent=f.short;
+    const cv=document.createElement('canvas');
+    cv.width=FW; cv.height=FH;
+    cv.style.width='100%'; cv.style.height='auto';
+    card.appendChild(lbl); card.appendChild(cv);
+    const sub=document.createElement('div');
+    sub.className='cv-card-sub';
+    sub.textContent=f.name;
+    card.appendChild(sub);
+    row.appendChild(card);
+
+    // draw with slight delay for stagger effect
+    setTimeout(()=>{
+      putGray(cv, convCache[i], FW, FH, f.col);
+    }, i*120);
+  });
+})();
+
+/* ══════════ CHAPTER 6 — HIERARCHY + RELU ══════════ */
+(function initCh6(){
+  // hierarchy row — draw staged outputs
+  const hier=document.getElementById('hierRow');
+  const hierStages=[
+    { label:'Original', sublabel:'raw pixels', src:'face', w:110, h:132 },
+    { label:'Layer 1', sublabel:'vertical edges', src:0, w:110, h:132 },
+    { label:'Layer 1', sublabel:'all edges (Laplacian)', src:4, w:110, h:132 },
+    { label:'Layer 2 (sim)', sublabel:'curves + junctions', src:'blend02', w:110, h:132 },
+    { label:'Recognition', sublabel:'confidence output', src:'conf', w:110, h:132 },
+  ];
+
+  function makeHierItem(stage){
+    const wrap=document.createElement('div');
+    wrap.className='hier-item';
+    const cv=document.createElement('canvas');
+    cv.width=stage.w; cv.height=stage.h;
+    cv.style.border='1px solid #ddd8ce'; cv.style.borderRadius='6px';
+
+    if(stage.src==='face'){
+      const ctx=cv.getContext('2d');
+      ctx.drawImage(faceImg,0,0,stage.w,stage.h);
+    } else if(stage.src==='blend02'){
+      // blend V-edge + Laplacian to simulate L2 curves
+      const blend=new Float32Array(FW*FH);
+      const A=convCache[0],B=convCache[4];
+      for(let i=0;i<FW*FH;i++) blend[i]=(A[i]+B[i])/2;
+      putGray(cv,blend,FW,FH,v=>[Math.round(v*.5),Math.round(v*.9),Math.round(v*.7)]);
+      cv.style.width=stage.w+'px'; cv.style.height=stage.h+'px';
+    } else if(stage.src==='conf'){
+      const ctx=cv.getContext('2d');
+      ctx.fillStyle='#fff'; ctx.fillRect(0,0,stage.w,stage.h);
+      const confs=[{l:'Face',p:97,c:'#2a8a50'},{l:'Portrait',p:88,c:'#1a5fa8'},{l:'Person',p:74,c:'#c07820'},{l:'Animal',p:1,c:'#c94030'}];
+      confs.forEach((c,i)=>{
+        const y=18+i*26;
+        ctx.fillStyle='#e8e4de'; ctx.fillRect(4,y,stage.w-8,18);
+        ctx.fillStyle=c.c; ctx.fillRect(4,y,Math.round((stage.w-8)*c.p/100),18);
+        ctx.fillStyle='#fff'; ctx.font='bold 9px IBM Plex Mono,monospace';
+        ctx.textAlign='left'; ctx.textBaseline='middle';
+        ctx.fillText(c.l, 8, y+9);
+        ctx.textAlign='right';
+        ctx.fillText(c.p+'%', stage.w-6, y+9);
+      });
+    } else {
+      putGray(cv,convCache[stage.src],FW,FH,FILTERS[stage.src].col);
+      cv.style.width=stage.w+'px'; cv.style.height=stage.h+'px';
+    }
+
+    const lbl=document.createElement('div'); lbl.className='hier-label'; lbl.textContent=stage.label;
+    const sub=document.createElement('div'); sub.className='hier-sublabel'; sub.textContent=stage.sublabel;
+    wrap.appendChild(cv); wrap.appendChild(lbl); wrap.appendChild(sub);
+    return wrap;
+  }
+
+  hierStages.forEach((s,i)=>{
+    if(i>0){ const arr=document.createElement('div'); arr.className='hier-arrow'; arr.textContent='→'; hier.appendChild(arr); }
+    hier.appendChild(makeHierItem(s));
+  });
+
+  // ReLU canvas
+  const reluCv=document.getElementById('reluCanvas');
+  const reluCtx=reluCv.getContext('2d');
+  // left half: raw vertical edge (allow negatives to show as dark)
+  const rawMap=new Float32Array(FW*FH);
+  for(let i=0;i<FW*FH;i++){
+    // Un-normalise back: we need the original signed output
+    // Approximate: use sobel X raw
+    rawMap[i]=convCache[0][i]>128?convCache[0][i]-128:-(128-convCache[0][i]);
+  }
+  // draw side by side: left raw, right relu
+  const half=100;
+  const offRaw=document.createElement('canvas'); offRaw.width=FW; offRaw.height=FH;
+  const offRelu=document.createElement('canvas'); offRelu.width=FW; offRelu.height=FH;
+  putGray(offRaw,rawMap,FW,FH,v=>[Math.round(v*.9),Math.round(v*.3),0]);
+  const reluMap=rawMap.map(v=>Math.max(0,v));
+  putGray(offRelu,reluMap,FW,FH,v=>[Math.round(v*.9),Math.round(v*.3),0]);
+  reluCtx.drawImage(offRaw,0,0,FW,FH,0,0,half,FH/FW*half*FH/FH*half);
+  reluCtx.drawImage(offRaw,0,0,FW,FH,0,0,half,180);
+  reluCtx.drawImage(offRelu,0,0,FW,FH,half+2,0,half,180);
+  // divider
+  reluCtx.fillStyle='#c94030'; reluCtx.fillRect(half,0,2,180);
+  reluCtx.fillStyle='#c94030'; reluCtx.font='bold 9px IBM Plex Mono,monospace';
+  reluCtx.textAlign='center'; reluCtx.textBaseline='top';
+  reluCtx.fillText('before',half/2,3);
+  reluCtx.fillText('ReLU →',half+half/2+1,3);
+
+  // confidence bars
+  const confWrap=document.getElementById('confBars');
+  const confData=[
+    {l:'Face — Human',p:97.3,c:'#2a8a50'},
+    {l:'Portrait',p:94.1,c:'#1a5fa8'},
+    {l:'Person',p:88.7,c:'#c07820'},
+    {l:'Animal',p:1.2,c:'#c94030'},
+    {l:'Object',p:0.4,c:'#8a8070'},
+  ];
+  confData.forEach(d=>{
+    const wr=document.createElement('div'); wr.className='act-bar-wrap';
+    const lb=document.createElement('div'); lb.className='act-bar-lbl'; lb.innerHTML=`<strong>${d.l}</strong>`;
+    const tr=document.createElement('div'); tr.className='act-bar-track';
+    const fi=document.createElement('div'); fi.className='act-bar-fill';
+    fi.style.background=d.c; fi.style.width='0';
+    fi.textContent=d.p+'%';
+    tr.appendChild(fi); wr.appendChild(lb); wr.appendChild(tr);
+    confWrap.appendChild(wr);
+    setTimeout(()=>{ fi.style.width=d.p+'%'; },400);
+  });
+})();
+</script>
+</body>
+</html>

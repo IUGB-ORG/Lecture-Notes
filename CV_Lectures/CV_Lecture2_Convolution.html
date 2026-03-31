@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Lecture 2 · The Convolution Operation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0b0f14;
+    --surface:  #131920;
+    --surface2: #1a2230;
+    --border:   #2a3340;
+    --text:     #dde4ed;
+    --muted:    #7a8899;
+    --accent:   #00d4aa;   /* teal — different from L1 orange */
+    --accent2:  #f0883e;
+    --blue:     #4da6ff;
+    --red:      #ff5c6a;
+    --yellow:   #f0c27f;
+    --purple:   #c084fc;
+    --green:    #4ade80;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--blue));
+    z-index: 999; transition: width 0.1s;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 360px;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 60px 80px 50px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #0b0f14 0%, #0d1a1f 55%, #0f1620 100%);
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  /* animated scan line */
+  .hero-scan {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,170,0.4), transparent);
+    animation: scan 4s linear infinite;
+    top: 0;
+  }
+  @keyframes scan { from { top: 0; } to { top: 100%; } }
+
+  .hero-tag {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--accent); letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 18px; opacity: 0; animation: fadeUp 0.6s 0.1s ease forwards;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 64px); font-weight: 900;
+    line-height: 1.1; color: #fff; max-width: 780px;
+    opacity: 0; animation: fadeUp 0.6s 0.2s ease forwards;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub {
+    margin-top: 16px; font-size: 18px; color: var(--muted);
+    max-width: 580px; font-style: italic;
+    opacity: 0; animation: fadeUp 0.6s 0.35s ease forwards;
+  }
+  .hero-meta {
+    margin-top: 28px; display: flex; gap: 24px; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 0.6s 0.5s ease forwards;
+  }
+  .hero-meta span {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--muted); background: var(--surface);
+    border: 1px solid var(--border); padding: 4px 12px; border-radius: 20px;
+  }
+  .hero-meta span b { color: var(--accent); }
+  .hero-page-badge {
+    display: inline-block; font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600; color: var(--bg);
+    background: var(--blue); padding: 3px 11px; border-radius: 20px;
+    letter-spacing: 1px; margin-left: 12px; vertical-align: middle;
+    opacity: 0; animation: fadeUp 0.6s 0.6s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 44px; }
+
+  section {
+    padding: 64px 0 52px; border-bottom: 1px solid var(--border);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+  }
+  section.visible { opacity: 1; transform: none; }
+
+  .section-header-row {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; margin-bottom: 8px;
+  }
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--accent);
+  }
+  .page-badge {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    font-weight: 600; color: var(--bg); background: var(--accent);
+    padding: 3px 11px; border-radius: 20px; letter-spacing: 1px;
+    white-space: nowrap; margin-top: 2px; flex-shrink: 0;
+  }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 3.5vw, 38px); font-weight: 700;
+    color: #fff; margin-bottom: 24px; line-height: 1.2;
+  }
+  h3 {
+    font-family: 'Playfair Display', serif; font-size: 22px;
+    font-weight: 700; color: var(--accent); margin: 36px 0 12px;
+  }
+  p { color: #c5cdd8; margin-bottom: 16px; }
+  strong { color: var(--text); }
+
+  /* callouts */
+  .callout {
+    background: var(--surface2); border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0; padding: 18px 24px; margin: 24px 0;
+  }
+  .callout.blue   { border-color: var(--blue); }
+  .callout.orange { border-color: var(--accent2); }
+  .callout.red    { border-color: var(--red); }
+  .callout.purple { border-color: var(--purple); }
+  .callout-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .callout.blue   .callout-title { color: var(--blue); }
+  .callout.orange .callout-title { color: var(--accent2); }
+  .callout.red    .callout-title { color: var(--red); }
+  .callout.purple .callout-title { color: var(--purple); }
+
+  /* insight panel */
+  .insight {
+    background: linear-gradient(135deg, rgba(0,212,170,0.09), rgba(77,166,255,0.06));
+    border: 1px solid rgba(0,212,170,0.25);
+    border-radius: 14px; padding: 28px 32px; margin: 36px 0;
+  }
+  .insight-icon { font-size: 28px; margin-bottom: 10px; }
+  .insight h4 {
+    font-family: 'Playfair Display', serif; font-size: 20px;
+    color: var(--accent); margin-bottom: 10px;
+  }
+
+  /* code */
+  code {
+    font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 2px 7px; border-radius: 4px; color: var(--yellow);
+  }
+  pre {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 24px 28px; margin: 24px 0; overflow-x: auto;
+  }
+  pre code {
+    background: none; border: none; padding: 0;
+    font-size: 13.5px; line-height: 1.75; color: var(--text);
+  }
+  .kw  { color: var(--purple); }
+  .cm  { color: var(--muted); font-style: italic; }
+  .str { color: var(--green); }
+  .num { color: var(--accent2); }
+  .fn  { color: var(--blue); }
+  .acc { color: var(--accent); }
+
+  /* two-col */
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 32px; align-items: start;
+  }
+  @media(max-width:700px) { .two-col { grid-template-columns:1fr; } }
+
+  /* diagram wrap */
+  .diagram-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 32px; margin: 32px 0; text-align: center;
+  }
+  .diagram-caption {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--muted); margin-top: 16px; font-style: italic;
+  }
+  canvas { display: block; margin: 0 auto; border-radius: 4px; }
+
+  /* shape box */
+  .shape-box {
+    display: inline-block; font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px; font-weight: 600; background: var(--surface2);
+    border: 2px solid var(--accent); color: var(--accent);
+    padding: 8px 18px; border-radius: 8px; margin: 4px;
+  }
+  .shape-box.blue { border-color: var(--blue); color: var(--blue); }
+  .shape-box.orange { border-color: var(--accent2); color: var(--accent2); }
+
+  /* math display */
+  .math-display {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px 32px; margin: 24px 0;
+    text-align: center; font-family: 'IBM Plex Mono', monospace;
+  }
+  .math-big {
+    font-size: clamp(16px, 2.5vw, 22px);
+    color: var(--text); line-height: 2;
+  }
+  .math-big .r { color: var(--red); }
+  .math-big .g { color: var(--green); }
+  .math-big .b { color: var(--blue); }
+  .math-big .acc { color: var(--accent); }
+  .math-big .y   { color: var(--yellow); }
+
+  /* table */
+  table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 15px; }
+  th {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+    padding: 10px 16px; border-bottom: 2px solid var(--border); text-align: left;
+  }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: #c5cdd8; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* nav dots */
+  .lecture-nav {
+    position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 100;
+  }
+  .nav-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--border); cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .nav-dot:hover, .nav-dot.active { background: var(--accent); transform: scale(1.4); }
+  @media(max-width:900px) { .lecture-nav { display: none; } }
+
+  /* summary cards */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px; margin-top: 32px;
+  }
+  .summary-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 22px; border-top: 3px solid var(--accent);
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .summary-card:hover { transform: translateY(-3px); border-color: var(--blue); }
+  .summary-card .num-big {
+    font-family: 'Playfair Display', serif; font-size: 40px;
+    color: var(--accent); line-height: 1; margin-bottom: 8px;
+  }
+  .summary-card p { font-size: 15px; color: var(--muted); margin: 0; }
+
+  /* ══ ANIMATED CONVOLUTION DEMO ══ */
+  #conv-demo-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; margin: 36px 0;
+  }
+  .conv-controls {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 24px;
+  }
+  .btn {
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600;
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text); padding: 8px 20px; border-radius: 8px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .speed-control {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted);
+  }
+  .speed-control input { accent-color: var(--accent); width: 80px; }
+
+  /* live math panel */
+  .live-math {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 22px; margin-top: 20px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+    min-height: 90px; transition: all 0.2s;
+  }
+  .live-math .lm-title { color: var(--muted); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+  .live-math .lm-eq { color: var(--text); line-height: 2; font-size: 13px; }
+  .live-math .lm-result { color: var(--accent); font-size: 16px; font-weight: 600; margin-top: 6px; }
+
+  /* kernel selector */
+  .kernel-tabs {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center;
+  }
+  .kernel-tab {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600;
+    padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--muted); cursor: pointer;
+    transition: all 0.15s; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .kernel-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .kernel-tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  /* filter gallery */
+  .filter-gallery {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px; margin: 28px 0;
+  }
+  .filter-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .filter-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .filter-card h4 {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    font-weight: 600; color: var(--accent); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .filter-card p { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+
+  footer {
+    text-align: center; padding: 48px 40px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer span { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<nav class="lecture-nav" id="lecnav">
+  <div class="nav-dot active" data-sec="0" title="Where We Left Off"></div>
+  <div class="nav-dot" data-sec="1" title="The Filter"></div>
+  <div class="nav-dot" data-sec="2" title="The Operation"></div>
+  <div class="nav-dot" data-sec="3" title="Live Demo"></div>
+  <div class="nav-dot" data-sec="4" title="What Filters Detect"></div>
+  <div class="nav-dot" data-sec="5" title="Feature Maps"></div>
+  <div class="nav-dot" data-sec="6" title="Stride & Padding"></div>
+  <div class="nav-dot" data-sec="7" title="Key Insights"></div>
+  <div class="nav-dot" data-sec="8" title="NumPy"></div>
+  <div class="nav-dot" data-sec="9" title="Takeaways"></div>
+</nav>
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-scan"></div>
+  <div class="container">
+    <div class="hero-tag">CSC-4315 · Introduction to AI &nbsp;·&nbsp; Computer Vision Series</div>
+    <h1>Lecture 2 — <span>The Convolution Operation</span> <span class="hero-page-badge">p. 1</span></h1>
+    <p class="hero-sub">The single mathematical idea that transformed machine vision — a tiny window of weights, sliding across an image.</p>
+    <div class="hero-meta">
+      <span>Lecture <b>2 / 5</b></span>
+      <span>Topic <b>Computer Vision</b></span>
+      <span>IUGB · <b>Spring 2026</b></span>
+      <span>Duration <b>~50 min</b></span>
+    </div>
+  </div>
+</header>
+
+<!-- ─────────────── SEC 0 · WHERE WE LEFT OFF ─────────────── -->
+<section id="sec-0">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 1</div>
+      <span class="page-badge">p. 2</span>
+    </div>
+    <h2>Where We Left Off</h2>
+    <p>In Lecture 1 we established that every image is just a rectangular grid of numbers — a 2D array for grayscale, a 3D tensor for color. We also identified a fundamental problem: if we flatten a 224×224 image and feed it to a plain MLP, we need tens of millions of parameters just in the first layer, and we completely destroy the spatial relationships between pixels.</p>
+    <p>The solution is <strong>Convolutional Neural Networks (CNNs)</strong>. And the single mathematical idea at their core is the <em>convolution operation</em>. That is the entire subject of this lecture.</p>
+
+    <div class="callout blue">
+      <div class="callout-title">📌 Lecture Roadmap</div>
+      <p style="margin:0;font-size:15px;">
+        <strong>L1</strong> — Images as Data ✓ &nbsp;·&nbsp;
+        <strong>Lecture 2</strong> — Convolution (today) &nbsp;·&nbsp;
+        <strong>L3</strong> — CNN Architecture &nbsp;·&nbsp;
+        <strong>L4</strong> — Historical Victories &nbsp;·&nbsp;
+        <strong>L5</strong> — Transfer Learning
+      </p>
+    </div>
+
+    <div class="insight">
+      <div class="insight-icon">🎯</div>
+      <h4>The Big Idea for Today</h4>
+      <p style="margin:0;">Instead of connecting every neuron to every pixel, we use a small <strong>reusable filter</strong> that slides across the image, computing a local dot product at each position. Same weights, everywhere — massively fewer parameters, and spatial structure preserved.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── SEC 1 · THE FILTER ─────────────── -->
+<section id="sec-1">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 2</div>
+      <span class="page-badge">p. 3</span>
+    </div>
+    <h2>The Filter (Kernel)</h2>
+
+    <p>A <strong>filter</strong> (also called a <em>kernel</em>) is a small 2D matrix of learnable weights — typically 3×3 or 5×5. It is the "eye" of the convolution. Think of it as a small template that asks: <em>"does this local patch of the image look like me?"</em></p>
+
+    <div class="two-col">
+      <div>
+        <div style="text-align:center; margin: 24px 0 8px;">
+          <span class="shape-box">Filter shape: &nbsp;(F, F)</span>
+        </div>
+        <p style="text-align:center; color:var(--muted); font-size:15px; margin-bottom:24px;">F = filter size &nbsp;(typically 3 or 5)</p>
+
+        <p>Each element of the filter is a weight — a number that gets <em>learned</em> during training via backpropagation, exactly like the weights in our MLP. Before training, they are initialized randomly. After training, each filter has learned to respond to a specific visual pattern.</p>
+
+        <div class="callout orange">
+          <div class="callout-title">📐 Key Sizes</div>
+          <table style="margin:0;">
+            <tr><th>Filter</th><th>Parameters</th><th>Common use</th></tr>
+            <tr><td>3×3</td><td>9</td><td>Modern CNNs (default)</td></tr>
+            <tr><td>5×5</td><td>25</td><td>LeNet, older models</td></tr>
+            <tr><td>7×7</td><td>49</td><td>AlexNet first layer</td></tr>
+            <tr><td>1×1</td><td>1</td><td>Channel mixing (advanced)</td></tr>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-top:0;">Example: a 3×3 Vertical Edge Filter</h3>
+        <canvas id="kernelDisplayCanvas" width="320" height="280"></canvas>
+        <div class="diagram-caption">Each cell is a learnable weight. This particular filter will fire strongly when it sees a vertical edge.</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">🔑 Filter vs Kernel — Terminology Note</div>
+      <p style="margin:0;font-size:15px;">In signal processing, <em>kernel</em> is the precise term. In deep learning, <em>filter</em> is more common. They mean the same thing. You will also see <em>weight matrix</em> or <em>receptive window</em> in some texts. This lecture uses them interchangeably.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── SEC 2 · THE OPERATION ─────────────── -->
+<section id="sec-2">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 3</div>
+      <span class="page-badge">p. 4</span>
+    </div>
+    <h2>The Convolution Operation — Step by Step</h2>
+
+    <p>Here is the complete recipe for applying a 3×3 filter to a grayscale image:</p>
+
+    <ol style="padding-left:22px; color:#c5cdd8; display:flex; flex-direction:column; gap:14px; font-size:16px; margin:24px 0;">
+      <li><strong>Position</strong> — Place the filter over a 3×3 region of the input image (starting at the top-left corner).</li>
+      <li><strong>Multiply</strong> — Multiply each filter weight by the corresponding pixel value beneath it (element-wise).</li>
+      <li><strong>Sum</strong> — Add up all 9 products. This single number goes into the output at the current position.</li>
+      <li><strong>Slide</strong> — Move the filter one step to the right (or down at the end of a row) and repeat.</li>
+      <li><strong>Result</strong> — After visiting every valid position, the collection of output values forms the <em>feature map</em>.</li>
+    </ol>
+
+    <h3>The Math</h3>
+    <p>If the input is <code>I</code> and the filter is <code>K</code>, the output at position (i, j) is:</p>
+
+    <div class="math-display">
+      <div class="math-big">
+        <span class="acc">Output[i, j]</span> = &nbsp;
+        <span style="font-size:22px; color:var(--muted);">∑</span><sub style="font-size:12px; color:var(--muted);">m=0</sub><sup style="font-size:12px; color:var(--muted);">F−1</sup> &nbsp;
+        <span style="font-size:22px; color:var(--muted);">∑</span><sub style="font-size:12px; color:var(--muted);">n=0</sub><sup style="font-size:12px; color:var(--muted);">F−1</sup> &nbsp;
+        <span class="r">I[i+m, j+n]</span> &nbsp;×&nbsp; <span class="g">K[m, n]</span>
+      </div>
+      <div style="margin-top:10px; font-size:13px; color:var(--muted);">
+        where F = filter size &nbsp;·&nbsp; <span style="color:var(--red);">I</span> = input image &nbsp;·&nbsp; <span style="color:var(--green);">K</span> = kernel/filter
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 style="margin-top:16px;">Worked Example</h3>
+        <p>Consider this 3×3 patch of the image and the vertical edge filter:</p>
+        <canvas id="workedExCanvas" width="320" height="320"></canvas>
+      </div>
+      <div>
+        <h3 style="margin-top:16px;">The Calculation</h3>
+        <div class="math-display" style="text-align:left; margin-top:0;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; line-height:2.2; color:var(--muted);">
+            <span style="color:var(--text);">Patch × Filter element-by-element:</span><br>
+            <span style="color:var(--red);">10</span>×<span style="color:var(--green);">−1</span> + <span style="color:var(--red);">20</span>×<span style="color:var(--green);">0</span> + <span style="color:var(--red);">200</span>×<span style="color:var(--green);">+1</span><br>
+            <span style="color:var(--red);">15</span>×<span style="color:var(--green);">−2</span> + <span style="color:var(--red);">25</span>×<span style="color:var(--green);">0</span> + <span style="color:var(--red);">210</span>×<span style="color:var(--green);">+2</span><br>
+            <span style="color:var(--red);">12</span>×<span style="color:var(--green);">−1</span> + <span style="color:var(--red);">18</span>×<span style="color:var(--green);">0</span> + <span style="color:var(--red);">195</span>×<span style="color:var(--green);">+1</span><br>
+            <hr style="border-color:var(--border); margin:8px 0;">
+            = (−10+0+200) + (−30+0+420) + (−12+0+195)<br>
+            = 190 + 390 + 183<br>
+            <span style="color:var(--accent); font-size:16px; font-weight:600;">= <strong>763</strong> &nbsp;→ large positive value = strong vertical edge detected!</span>
+          </div>
+        </div>
+        <div class="callout">
+          <div class="callout-title">💡 Intuition</div>
+          <p style="margin:0;font-size:15px;">Left side of patch ≈ 10–15 (dark). Right side ≈ 195–210 (bright). The filter assigns <strong>−1/−2/−1</strong> to the left and <strong>+1/+2/+1</strong> to the right. Dark left + bright right = large positive → vertical edge confirmed.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── SEC 3 · LIVE ANIMATED DEMO ─────────────── -->
+<section id="sec-3">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 4</div>
+      <span class="page-badge">p. 5</span>
+    </div>
+    <h2>Live Convolution Animator</h2>
+    <p>Watch the filter slide across the input image in real time. At each position, the live math panel shows the exact computation happening — 9 multiplications and their sum — producing one output value.</p>
+
+    <!-- kernel selector -->
+    <div class="kernel-tabs">
+      <div class="kernel-tab active" data-k="vedge">Vertical Edge</div>
+      <div class="kernel-tab" data-k="hedge">Horizontal Edge</div>
+      <div class="kernel-tab" data-k="blur">Blur</div>
+      <div class="kernel-tab" data-k="sharp">Sharpen</div>
+      <div class="kernel-tab" data-k="identity">Identity</div>
+    </div>
+
+    <div id="conv-demo-wrap">
+      <div class="conv-controls">
+        <button class="btn" id="btnPlay">▶ Play</button>
+        <button class="btn" id="btnStep">Step →</button>
+        <button class="btn" id="btnReset">↺ Reset</button>
+        <div class="speed-control">
+          <span>Speed:</span>
+          <input type="range" id="speedSlider" min="1" max="10" value="4">
+          <span id="speedLabel">4×</span>
+        </div>
+      </div>
+
+      <canvas id="convAnimCanvas" width="780" height="320"></canvas>
+
+      <div class="live-math" id="liveMath">
+        <div class="lm-title">Live Computation</div>
+        <div class="lm-eq" id="lmEq">Press Play or Step to begin the convolution →</div>
+      </div>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">📌 What to observe</div>
+      <p style="margin:0;font-size:15px;">Watch how the <strong>highlighted green region</strong> on the input moves in sync with the filter position. The output pixel lights up as it is computed. Notice that regions where the image matches the filter pattern produce large output values (bright in the feature map), while non-matching regions produce small or negative values (dark).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── SEC 4 · WHAT FILTERS DETECT ─────────────── -->
+<section id="sec-4">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 5</div>
+      <span class="page-badge">p. 6</span>
+    </div>
+    <h2>What Filters Detect</h2>
+
+    <p>Before training, filters are random. After training on millions of images, each filter in a CNN's first layer typically learns to detect a simple, interpretable visual primitive. Here are the classical examples:</p>
+
+    <div class="filter-gallery">
+      <div class="filter-card">
+        <h4>Vertical Edge</h4>
+        <canvas id="fc1" width="120" height="120"></canvas>
+        <p>Fires on vertical transitions: dark-left / bright-right or vice versa</p>
+      </div>
+      <div class="filter-card">
+        <h4>Horizontal Edge</h4>
+        <canvas id="fc2" width="120" height="120"></canvas>
+        <p>Fires on horizontal transitions: dark-top / bright-bottom</p>
+      </div>
+      <div class="filter-card">
+        <h4>Diagonal Edge</h4>
+        <canvas id="fc3" width="120" height="120"></canvas>
+        <p>Fires on 45° edges — lines going from bottom-left to top-right</p>
+      </div>
+      <div class="filter-card">
+        <h4>Blur (Avg)</h4>
+        <canvas id="fc4" width="120" height="120"></canvas>
+        <p>All weights equal &nbsp;<code>1/9</code> — smooths the image, reduces noise</p>
+      </div>
+      <div class="filter-card">
+        <h4>Sharpen</h4>
+        <canvas id="fc5" width="120" height="120"></canvas>
+        <p>Center strongly positive, neighbors negative — amplifies high-frequency details</p>
+      </div>
+      <div class="filter-card">
+        <h4>Identity</h4>
+        <canvas id="fc6" width="120" height="120"></canvas>
+        <p>Center = 1, all others = 0. Output is identical to input. Useful baseline.</p>
+      </div>
+    </div>
+
+    <!-- Applied-to-image demo -->
+    <h3>Applied to a Real Image — The Letter "L"</h3>
+    <p>Below, the same 8×8 test image is convolved with each of the three edge filters. Notice how each filter highlights a different set of strokes.</p>
+
+    <div class="diagram-wrap">
+      <canvas id="edgeApplyCanvas" width="720" height="200"></canvas>
+      <div class="diagram-caption">Left: original image. Center-left: vertical edge response. Center-right: horizontal edge response. Right: both combined (magnitude).</div>
+    </div>
+
+    <div class="callout purple">
+      <div class="callout-title">🧠 Deep Layers See More</div>
+      <p style="margin:0;font-size:15px;">First-layer filters detect edges and color gradients. Second-layer filters (applied to feature maps, not raw pixels) detect textures and simple shapes. Third-layer filters detect parts of objects. By the final layers, filters respond to high-level concepts — eyes, wheels, fur. <strong>The hierarchy is learned automatically from data.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── SEC 5 · FEATURE MAPS ─────────────── -->
+<section id="sec-5">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 6</div>
+      <span class="page-badge">p. 7</span>
+    </div>
+    <h2>Feature Maps — Multiple Filters in Parallel</h2>
+
+    <p>In practice, a single convolutional layer applies <strong>many filters simultaneously</strong> — not just one. Each filter produces its own independent <em>feature map</em>. The complete output of the layer is the stack of all these maps.</p>
+
+    <div style="text-align:center; margin: 28px 0 12px;">
+      <span class="shape-box">Input: &nbsp;(H, W, 1)</span>
+      <span style="font-size:22px; color:var(--muted); margin:0 12px;">→</span>
+      <span class="shape-box orange">N filters of size (F, F)</span>
+      <span style="font-size:22px; color:var(--muted); margin:0 12px;">→</span>
+      <span class="shape-box blue">Output: &nbsp;(H', W', N)</span>
+    </div>
+    <p style="text-align:center; color:var(--muted); font-size:15px;">N feature maps stacked into a new 3D tensor — just like an RGB image, but the "channels" are now learned features.</p>
+
+    <div class="diagram-wrap">
+      <canvas id="featureMapCanvas" width="740" height="260"></canvas>
+      <div class="diagram-caption">One input image → 4 different filters → 4 feature maps. Each map highlights a different visual property of the original image.</div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3>Color Images: One Filter per Channel</h3>
+        <p>For a color input of shape (H, W, 3), a single filter has shape <strong>(F, F, 3)</strong> — one 2D kernel per input channel. The three channel outputs are summed to produce one scalar per position, so each filter still produces exactly one feature map.</p>
+        <div class="callout">
+          <div class="callout-title">📐 Parameter Count</div>
+          <p style="margin:0; font-size:15px;">
+            A conv layer with <strong>N</strong> filters of size F×F applied to C input channels has:<br>
+            <code>N × F × F × C + N</code> parameters<br>
+            (the +N accounts for one bias per filter)<br><br>
+            Example: 32 filters, 3×3, on a grayscale image (C=1):<br>
+            <strong style="color:var(--accent);">32 × 9 × 1 + 32 = 320 parameters</strong>
+          </p>
+        </div>
+      </div>
+      <div>
+        <h3>vs. Fully Connected</h3>
+        <p>Compare to a dense MLP layer connecting a 28×28 grayscale image to 32 hidden neurons:</p>
+        <div style="text-align:center; margin:16px 0;">
+          <span class="shape-box" style="font-size:14px;">MLP: &nbsp;784 × 32 + 32 = <strong style="color:var(--red);">25,120</strong></span>
+        </div>
+        <div style="text-align:center; margin:16px 0;">
+          <span class="shape-box blue" style="font-size:14px;">Conv: &nbsp;32 × 9 + 32 = <strong style="color:var(--accent);">320</strong></span>
+        </div>
+        <p>The convolutional layer achieves the same 32-channel output with <strong>78× fewer parameters</strong> — and it <em>generalizes better</em> because the same filter works everywhere in the image.</p>
+        <div class="callout orange">
+          <div class="callout-title">✨ Weight Sharing</div>
+          <p style="margin:0;font-size:15px;">The same 9 weights are reused at every spatial position. If a vertical edge detector works in the top-left corner, it works in the bottom-right corner too. This is called <strong>weight sharing</strong> and it is the key efficiency gain of convolution.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── SEC 6 · STRIDE & PADDING ─────────────── -->
+<section id="sec-6">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 7</div>
+      <span class="page-badge">p. 8</span>
+    </div>
+    <h2>Stride &amp; Padding</h2>
+    <p>Two hyperparameters control the geometry of the convolution output: <strong>stride</strong> and <strong>padding</strong>.</p>
+
+    <div class="two-col">
+      <div>
+        <h3 style="margin-top:0;">Stride</h3>
+        <p>Stride S controls <em>how many pixels the filter moves at each step</em>. Stride 1 is the default (move one pixel). Stride 2 skips every other pixel — the feature map comes out roughly half the size.</p>
+
+        <div class="math-display" style="text-align:left; padding:16px 20px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--muted); line-height:2;">
+            <span style="color:var(--text);">Output size formula (1D):</span><br>
+            <span style="color:var(--accent);">H_out = floor( (H_in − F) / S ) + 1</span><br><br>
+            Example: 28×28 input, 3×3 filter, stride 1:<br>
+            H_out = (28 − 3) / 1 + 1 = <span style="color:var(--accent2);">26</span><br><br>
+            Same input, stride 2:<br>
+            H_out = (28 − 3) / 2 + 1 = <span style="color:var(--accent2);">13</span>
+          </div>
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">💡 Why Use Stride > 1?</div>
+          <p style="margin:0;font-size:15px;">To <strong>downsample</strong> the spatial dimensions — reducing computation in deeper layers. Stride 2 is often used instead of max pooling in modern architectures. Think of it as zooming out.</p>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-top:0;">Padding</h3>
+        <p>When the filter slides off the edge of the image, valid positions end early — the output is smaller than the input. <strong>Padding</strong> adds a border of zeros around the input to control this.</p>
+        <table>
+          <tr><th>Mode</th><th>Description</th><th>Effect</th></tr>
+          <tr><td><code>'valid'</code></td><td>No padding (default)</td><td>Output shrinks by F−1</td></tr>
+          <tr><td><code>'same'</code></td><td>Pad to preserve size</td><td>Output = input size</td></tr>
+        </table>
+        <div class="callout blue">
+          <div class="callout-title">📐 Padding Formula</div>
+          <p style="margin:0;font-size:15px;">For <code>'same'</code> output with stride 1: add <code>P = (F−1)/2</code> zeros on each side. For a 3×3 filter: P = 1. For a 5×5 filter: P = 2.</p>
+        </div>
+
+        <canvas id="paddingCanvas" width="320" height="200" style="margin-top:16px;"></canvas>
+        <div class="diagram-caption">A 4×4 image padded by 1 zero on each side, ready for a 3×3 convolution that preserves the 4×4 spatial size.</div>
+      </div>
+    </div>
+    <div class="diagram-wrap" style="margin-top:32px;">
+      <canvas id="strideCanvas" width="720" height="200"></canvas>
+      <div class="diagram-caption">Stride 1 (top) vs Stride 2 (bottom) on the same 6×6 input with a 3×3 filter. Stride 2 visits half the positions and produces a smaller feature map.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── SEC 7 · KEY INSIGHTS ─────────────── -->
+<section id="sec-7">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 8</div>
+      <span class="page-badge">p. 9</span>
+    </div>
+    <h2>The Three Key Insights of Convolution</h2>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; margin-top:8px;">
+      <div class="insight" style="margin:0;">
+        <div class="insight-icon">🔗</div>
+        <h4 style="font-size:17px;">1. Local Connectivity</h4>
+        <p style="margin:0; font-size:15px;">Each output value depends on only a small local patch of the input (F×F pixels). A neuron doesn't need to see the whole image — nearby pixels carry the relevant spatial context.</p>
+      </div>
+      <div class="insight" style="margin:0; background: linear-gradient(135deg, rgba(77,166,255,0.09), rgba(0,212,170,0.06)); border-color: rgba(77,166,255,0.25);">
+        <div class="insight-icon">♻️</div>
+        <h4 style="font-size:17px; color:var(--blue);">2. Weight Sharing</h4>
+        <p style="margin:0; font-size:15px;">The same filter weights are applied everywhere. A detector trained to find eyes in the upper-left of the image automatically works in the lower-right. This is <em>translation equivariance</em>.</p>
+      </div>
+      <div class="insight" style="margin:0; background: linear-gradient(135deg, rgba(192,132,252,0.09), rgba(0,212,170,0.06)); border-color: rgba(192,132,252,0.25);">
+        <div class="insight-icon">🏛️</div>
+        <h4 style="font-size:17px; color:var(--purple);">3. Hierarchical Features</h4>
+        <p style="margin:0; font-size:15px;">Stack multiple conv layers and each layer sees the output of the previous. Layer 1 sees pixels → detects edges. Layer 2 sees edge maps → detects shapes. Etc. Complexity emerges from depth.</p>
+      </div>
+    </div>
+
+    <div class="callout orange" style="margin-top:36px;">
+      <div class="callout-title">🔗 Connection to MLP</div>
+      <p style="margin:0;font-size:15px;">A convolution layer is a <strong>constrained version of a fully connected layer</strong>. If you took a dense layer and forced all neurons that share the same relative position to also share their weights, you'd get a convolution. The constraint is not a limitation — it is a very powerful inductive bias that encodes what we know about images: patterns repeat spatially.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── SEC 8 · NUMPY CODE ─────────────── -->
+<section id="sec-8">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 9</div>
+      <span class="page-badge">p. 10</span>
+    </div>
+    <h2>Convolution in NumPy &amp; PyTorch</h2>
+
+    <div class="two-col">
+      <div>
+        <h3 style="margin-top:0;">Manual Convolution (NumPy)</h3>
+        <p>Writing it by hand cements the understanding:</p>
+        <pre><code><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="kw">def</span> <span class="fn">conv2d_manual</span>(image, kernel):
+    <span class="str">"""Single-channel 2D convolution, valid padding."""</span>
+    H, W = image.shape
+    F     = kernel.shape[<span class="num">0</span>]     <span class="cm"># assume square kernel</span>
+    H_out = H - F + <span class="num">1</span>
+    W_out = W - F + <span class="num">1</span>
+    output = np.<span class="fn">zeros</span>((H_out, W_out))
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(H_out):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(W_out):
+            patch  = image[i:i+F, j:j+F]  <span class="cm"># extract F×F region</span>
+            output[i, j] = np.<span class="fn">sum</span>(patch * kernel)
+
+    <span class="kw">return</span> output
+
+<span class="cm"># Vertical edge filter</span>
+kernel = np.<span class="fn">array</span>([
+    [<span class="num">-1</span>, <span class="num">0</span>, <span class="num">1</span>],
+    [<span class="num">-2</span>, <span class="num">0</span>, <span class="num">2</span>],
+    [<span class="num">-1</span>, <span class="num">0</span>, <span class="num">1</span>]
+], dtype=np.<span class="fn">float32</span>)
+
+img = np.<span class="fn">random</span>.<span class="fn">randint</span>(<span class="num">0</span>, <span class="num">255</span>, (<span class="num">28</span>, <span class="num">28</span>))
+feature_map = <span class="fn">conv2d_manual</span>(img, kernel)
+<span class="fn">print</span>(feature_map.shape)  <span class="cm"># → (26, 26)  [valid padding]</span></code></pre>
+      </div>
+      <div>
+        <h3 style="margin-top:0;">In PyTorch (What You'll Use)</h3>
+        <pre><code><span class="kw">import</span> torch
+<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="cm"># Define a conv layer:</span>
+<span class="cm"># in_channels=1 (grayscale)</span>
+<span class="cm"># out_channels=32 (number of filters)</span>
+<span class="cm"># kernel_size=3×3, stride=1, padding=1 ('same')</span>
+conv = nn.<span class="fn">Conv2d</span>(
+    in_channels=<span class="num">1</span>,
+    out_channels=<span class="num">32</span>,
+    kernel_size=<span class="num">3</span>,
+    stride=<span class="num">1</span>,
+    padding=<span class="num">1</span>
+)
+
+<span class="cm"># Input: batch of 8 grayscale 28×28 images</span>
+<span class="cm"># Shape: (batch, channels, H, W)</span>
+x = torch.<span class="fn">randn</span>(<span class="num">8</span>, <span class="num">1</span>, <span class="num">28</span>, <span class="num">28</span>)
+y = <span class="fn">conv</span>(x)
+<span class="fn">print</span>(y.shape)  <span class="cm"># → (8, 32, 28, 28)</span>
+<span class="cm">#                   ↑    ↑    ↑   ↑</span>
+<span class="cm">#                 batch  32  H   W  (preserved by padding=1)</span>
+
+<span class="cm"># Count parameters:</span>
+<span class="fn">print</span>(<span class="fn">sum</span>(p.<span class="fn">numel</span>() <span class="kw">for</span> p <span class="kw">in</span> conv.<span class="fn">parameters</span>()))
+<span class="cm"># → 320   (32×9 + 32 biases)</span></code></pre>
+
+        <div class="callout blue">
+          <div class="callout-title">⚠️ PyTorch Channel Convention</div>
+          <p style="margin:0;font-size:15px;">PyTorch expects inputs as <code>(N, C, H, W)</code> — <em>channel-first</em>. If your NumPy image is <code>(H, W, C)</code>, convert with: <code>x = torch.from_numpy(img).permute(2, 0, 1)</code></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── SEC 9 · TAKEAWAYS ─────────────── -->
+<section id="sec-9">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 10</div>
+      <span class="page-badge">p. 11</span>
+    </div>
+    <h2>Key Takeaways</h2>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="num-big">01</div>
+        <p><strong>A filter is a small weight matrix</strong> (3×3 typical) that slides across the image computing a local dot product at every position.</p>
+      </div>
+      <div class="summary-card">
+        <div class="num-big">02</div>
+        <p><strong>Output = element-wise multiply + sum.</strong> Nine multiplications and eight additions per position. Simple arithmetic.</p>
+      </div>
+      <div class="summary-card">
+        <div class="num-big">03</div>
+        <p><strong>Each filter produces one feature map.</strong> N filters → N feature maps stacked into shape (H', W', N).</p>
+      </div>
+      <div class="summary-card">
+        <div class="num-big">04</div>
+        <p><strong>Weight sharing is the key efficiency.</strong> Same 9 weights reused at every position → 78× fewer parameters than a dense layer.</p>
+      </div>
+      <div class="summary-card">
+        <div class="num-big">05</div>
+        <p><strong>Stride controls downsampling.</strong> Stride 1 = dense scan. Stride 2 ≈ halves spatial dimensions.</p>
+      </div>
+      <div class="summary-card">
+        <div class="num-big">06</div>
+        <p><strong>Padding preserves size.</strong> <code>'same'</code> padding keeps H×W constant; <code>'valid'</code> lets it shrink by F−1.</p>
+      </div>
+    </div>
+
+    <div class="insight" style="margin-top:48px;">
+      <div class="insight-icon">🔭</div>
+      <h4>Looking Ahead — Lecture 3</h4>
+      <p>Now that we understand the convolution operation in isolation, the next lecture assembles the <strong>full CNN architecture</strong>: stacking conv layers, adding pooling, connecting to a final classifier, and understanding how backpropagation flows through all of it.</p>
+    </div>
+
+    <div style="margin-top:40px; padding:28px; background:var(--surface); border:1px solid var(--border); border-radius:12px;">
+      <div class="section-label" style="margin-bottom:14px;">Discussion Questions</div>
+      <ol style="padding-left:22px; color:#c5cdd8; display:flex; flex-direction:column; gap:14px; font-size:16px;">
+        <li>A grayscale image is 32×32. A conv layer uses 16 filters of size 3×3, stride 1, valid padding. What is the output shape? How many total parameters does this layer have?</li>
+        <li>If you apply the blur filter (all weights = 1/9) to an image, what does the output look like? Why? What happens when you apply it twice?</li>
+        <li>In our MLP work, each neuron had a different weight connecting it to every input. In a conv layer, many neurons share the same weights. Why is this sharing a <em>good</em> thing for images specifically?</li>
+        <li>The Sobel vertical edge filter has large negative weights on the left column and large positive weights on the right. Design by hand a 3×3 filter that would detect a bright horizontal line in the middle of a dark region.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>CSC-4315 · Introduction to AI &nbsp;·&nbsp; <span>Computer Vision Lecture Series</span></div>
+  <div style="margin-top:6px;">International University of Grand-Bassam &nbsp;·&nbsp; School of Science and Engineering &nbsp;·&nbsp; Spring 2026</div>
+</footer>
+
+<!-- ═══════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════ -->
+<script>
+/* ── Scroll progress ── */
+window.addEventListener('scroll', () => {
+  const p = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+  document.getElementById('progress').style.width = (p * 100) + '%';
+});
+
+/* ── Section fade-in + nav dots ── */
+const sections = document.querySelectorAll('section');
+const dots = document.querySelectorAll('.nav-dot');
+new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      const i = [...sections].indexOf(e.target);
+      dots.forEach((d,j) => d.classList.toggle('active', i===j));
+    }
+  });
+}, { threshold: 0.1 }).observe || sections.forEach(s => s.classList.add('visible'));
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      const i = [...sections].indexOf(e.target);
+      dots.forEach((d,j) => d.classList.toggle('active', i===j));
+    }
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => obs.observe(s));
+dots.forEach((d,i) => d.addEventListener('click', () => sections[i].scrollIntoView({ behavior:'smooth' })));
+
+/* ════════════════════════════════════════
+   HELPERS
+   ════════════════════════════════════════ */
+function drawKernelGrid(ctx, kernel, x0, y0, cellSize, palette) {
+  const F = kernel.length;
+  const maxAbs = Math.max(...kernel.flat().map(Math.abs)) || 1;
+  kernel.forEach((row, r) => {
+    row.forEach((v, c) => {
+      const t = v / maxAbs; // -1 to 1
+      let fill;
+      if (v === 0) fill = '#1a2230';
+      else if (v > 0) fill = `rgba(0,212,170,${Math.abs(t) * 0.9 + 0.1})`;
+      else            fill = `rgba(255,92,106,${Math.abs(t) * 0.9 + 0.1})`;
+      ctx.fillStyle = fill;
+      ctx.fillRect(x0 + c*cellSize, y0 + r*cellSize, cellSize-2, cellSize-2);
+      ctx.fillStyle = Math.abs(v/maxAbs) > 0.4 ? '#000' : '#8b949e';
+      ctx.font = `bold ${Math.floor(cellSize*0.35)}px IBM Plex Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(v % 1 === 0 ? v : v.toFixed(2),
+                   x0 + c*cellSize + (cellSize-2)/2,
+                   y0 + r*cellSize + (cellSize-2)/2);
+    });
+  });
+}
+
+function drawImageGrid(ctx, image, x0, y0, cellSize, highlight, hlColor) {
+  const H = image.length, W = image[0].length;
+  image.forEach((row, r) => {
+    row.forEach((v, c) => {
+      const isHL = highlight && r >= highlight.r && r < highlight.r + highlight.F
+                             && c >= highlight.c && c < highlight.c + highlight.F;
+      const vn = Math.max(0, Math.min(255, v));
+      ctx.fillStyle = `rgb(${vn},${vn},${vn})`;
+      ctx.fillRect(x0 + c*cellSize, y0 + r*cellSize, cellSize, cellSize);
+      if (isHL) {
+        ctx.fillStyle = hlColor || 'rgba(0,212,170,0.38)';
+        ctx.fillRect(x0 + c*cellSize, y0 + r*cellSize, cellSize, cellSize);
+      }
+    });
+  });
+  // border
+  ctx.strokeStyle = '#2a3340'; ctx.lineWidth = 1;
+  for (let r=0;r<=H;r++){ctx.beginPath();ctx.moveTo(x0,y0+r*cellSize);ctx.lineTo(x0+W*cellSize,y0+r*cellSize);ctx.stroke();}
+  for (let c=0;c<=W;c++){ctx.beginPath();ctx.moveTo(x0+c*cellSize,y0);ctx.lineTo(x0+c*cellSize,y0+H*cellSize);ctx.stroke();}
+}
+
+function drawOutputGrid(ctx, outData, computed, x0, y0, cellSize) {
+  const H = outData.length, W = outData[0].length;
+  // normalise for display
+  let mn=Infinity, mx=-Infinity;
+  computed.forEach(pos => { mn=Math.min(mn,outData[pos.r][pos.c]); mx=Math.max(mx,outData[pos.r][pos.c]); });
+  if (mx===mn) mx=mn+1;
+  computed.forEach(pos => {
+    const norm = (outData[pos.r][pos.c]-mn)/(mx-mn);
+    const v = Math.round(norm*255);
+    ctx.fillStyle = `rgb(${v},${v},${v})`;
+    ctx.fillRect(x0+pos.c*cellSize, y0+pos.r*cellSize, cellSize, cellSize);
+  });
+  ctx.strokeStyle = '#2a3340'; ctx.lineWidth = 1;
+  for (let r=0;r<=H;r++){ctx.beginPath();ctx.moveTo(x0,y0+r*cellSize);ctx.lineTo(x0+W*cellSize,y0+r*cellSize);ctx.stroke();}
+  for (let c=0;c<=W;c++){ctx.beginPath();ctx.moveTo(x0+c*cellSize,y0);ctx.lineTo(x0+c*cellSize,y0+H*cellSize);ctx.stroke();}
+}
+
+/* ════════════════════════════════════════
+   KERNEL DISPLAY (Section 2)
+   ════════════════════════════════════════ */
+function drawKernelDisplay() {
+  const cv = document.getElementById('kernelDisplayCanvas');
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  const kernel = [[-1,0,1],[-2,0,2],[-1,0,1]];
+  const cellSize = 60;
+  const F = 3;
+  const x0 = (cv.width - F*cellSize)/2;
+  const y0 = 20;
+
+  ctx.fillStyle = '#000';
+  ctx.fillRect(x0-4, y0-4, F*cellSize+8, F*cellSize+8);
+
+  drawKernelGrid(ctx, kernel, x0, y0, cellSize, null);
+
+  // labels
+  ctx.fillStyle = '#7a8899';
+  ctx.font = '11px IBM Plex Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('col 0', x0+30, y0+F*cellSize+20);
+  ctx.fillText('col 1', x0+90, y0+F*cellSize+20);
+  ctx.fillText('col 2', x0+150, y0+F*cellSize+20);
+
+  ctx.save(); ctx.translate(x0-20, y0+F*cellSize/2);
+  ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+  ctx.fillText('row 0   row 1   row 2', 0, 0);
+  ctx.restore();
+
+  // legend
+  const ly = y0 + F*cellSize + 40;
+  ctx.fillStyle = 'rgba(0,212,170,0.7)'; ctx.fillRect(x0, ly, 20, 12);
+  ctx.fillStyle = '#7a8899'; ctx.font='11px IBM Plex Mono,monospace'; ctx.textAlign='left';
+  ctx.fillText('positive weight', x0+26, ly+10);
+  ctx.fillStyle = 'rgba(255,92,106,0.7)'; ctx.fillRect(x0+150, ly, 20, 12);
+  ctx.fillText('negative weight', x0+176, ly+10);
+}
+
+/* ════════════════════════════════════════
+   WORKED EXAMPLE (Section 3)
+   ════════════════════════════════════════ */
+function drawWorkedExample() {
+  const cv = document.getElementById('workedExCanvas');
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  const patch  = [[10,20,200],[15,25,210],[12,18,195]];
+  const kernel = [[-1,0,1],[-2,0,2],[-1,0,1]];
+  const cellSize = 70;
+  const F = 3;
+
+  // Image patch
+  const ix = 20, iy = 20;
+  ctx.fillStyle = '#000'; ctx.fillRect(ix-4,iy-4,F*cellSize+8,F*cellSize+8);
+  patch.forEach((row,r) => row.forEach((v,c) => {
+    ctx.fillStyle = `rgb(${v},${v},${v})`;
+    ctx.fillRect(ix+c*cellSize, iy+r*cellSize, cellSize, cellSize);
+    ctx.fillStyle = v < 100 ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.85)';
+    ctx.font = 'bold 14px IBM Plex Mono, monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(v, ix+c*cellSize+cellSize/2, iy+r*cellSize+cellSize/2);
+  }));
+  ctx.fillStyle = '#7a8899'; ctx.font='11px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('Image patch', ix+F*cellSize/2, iy+F*cellSize+18);
+
+  // × symbol
+  ctx.fillStyle='#7a8899'; ctx.font='bold 28px sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('×', ix+F*cellSize+24, iy+F*cellSize/2);
+
+  // Kernel
+  const kx = ix+F*cellSize+44, ky = iy;
+  ctx.fillStyle='#000'; ctx.fillRect(kx-4,ky-4,F*cellSize+8,F*cellSize+8);
+  drawKernelGrid(ctx, kernel, kx, ky, cellSize, null);
+  ctx.fillStyle='#7a8899'; ctx.font='11px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('Vertical edge kernel', kx+F*cellSize/2, ky+F*cellSize+18);
+}
+
+/* ════════════════════════════════════════
+   ANIMATED CONVOLUTION DEMO (Section 4)
+   ════════════════════════════════════════ */
+const KERNELS = {
+  vedge:    [[-1,0,1],[-2,0,2],[-1,0,1]],
+  hedge:    [[-1,-2,-1],[0,0,0],[1,2,1]],
+  blur:     [[1/9,1/9,1/9],[1/9,1/9,1/9],[1/9,1/9,1/9]],
+  sharp:    [[0,-1,0],[-1,5,-1],[0,-1,0]],
+  identity: [[0,0,0],[0,1,0],[0,0,0]]
+};
+
+// 8×8 test image — gradient with a vertical edge in the middle
+const ANIM_INPUT = (()=>{
+  const img=[];
+  for(let r=0;r<8;r++){
+    const row=[];
+    for(let c=0;c<8;c++){
+      if(c<4) row.push(20+r*5);
+      else    row.push(180+r*5);
+    }
+    img.push(row);
+  }
+  return img;
+})();
+
+let animState = {
+  playing: false, timer: null,
+  row:0, col:0,
+  kernel: KERNELS.vedge,
+  kernelKey: 'vedge',
+  outData: Array.from({length:6},()=>Array(6).fill(null)),
+  computed: []
+};
+
+function convPos(img, kernel, r, c) {
+  let sum=0;
+  for(let m=0;m<3;m++) for(let n=0;n<3;n++) sum+=img[r+m][c+n]*kernel[m][n];
+  return sum;
+}
+
+function animReset() {
+  animState.row=0; animState.col=0;
+  animState.outData=Array.from({length:6},()=>Array(6).fill(null));
+  animState.computed=[];
+  renderAnimFrame();
+  document.getElementById('lmEq').innerHTML = 'Press Play or Step to begin the convolution →';
+}
+
+function animStep() {
+  const {row, col, kernel} = animState;
+  if(row>5) return;
+  const val = convPos(ANIM_INPUT, kernel, row, col);
+  animState.outData[row][col] = val;
+  animState.computed.push({r:row,c:col});
+  updateLiveMath(row, col, val);
+  // advance
+  if(col<5) animState.col++;
+  else { animState.col=0; animState.row++; }
+  renderAnimFrame();
+}
+
+function updateLiveMath(r, c, val) {
+  const img = ANIM_INPUT, k = animState.kernel;
+  let eq = `<span style="color:var(--muted);">Position [${r}, ${c}] &nbsp;·&nbsp; patch × kernel:</span><br>`;
+  let terms=[];
+  for(let m=0;m<3;m++) for(let n=0;n<3;n++){
+    const iv=img[r+m][c+n], kv=k[m][n];
+    const kStr = kv%1===0 ? kv : kv.toFixed(2);
+    terms.push(`<span style="color:#f0883e">${iv}</span>×<span style="color:#4ade80">${kStr}</span>`);
+  }
+  eq += terms.slice(0,3).join(' + ') + '<br>';
+  eq += terms.slice(3,6).join(' + ') + '<br>';
+  eq += terms.slice(6,9).join(' + ');
+  eq += `<br><span style="color:var(--accent);font-weight:600;">= ${val.toFixed(2)}</span>`;
+  document.getElementById('lmEq').innerHTML = eq;
+}
+
+function renderAnimFrame() {
+  const cv = document.getElementById('convAnimCanvas');
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  const cellI=34, cellK=44, cellO=34;
+  const x0=20, y0=40, kx=350, ky=70, ox=540;
+
+  // ── Labels ──
+  ctx.fillStyle='#7a8899'; ctx.font='11px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('INPUT  (8×8)', x0+4*cellI, y0-14);
+  ctx.fillText('FILTER  (3×3)', kx+1.5*cellK, ky-14);
+  ctx.fillText('FEATURE MAP  (6×6)', ox+3*cellO, y0-14);
+
+  // ── Input image ──
+  const hl = animState.row<=5 ? {r:animState.row,c:animState.col,F:3} : null;
+  ctx.fillStyle='#000'; ctx.fillRect(x0-2,y0-2,8*cellI+4,8*cellI+4);
+  drawImageGrid(ctx, ANIM_INPUT, x0, y0, cellI, hl, 'rgba(0,212,170,0.42)');
+
+  // Draw highlight border
+  if(hl){
+    ctx.strokeStyle='#00d4aa'; ctx.lineWidth=2.5;
+    ctx.strokeRect(x0+hl.c*cellI+1, y0+hl.r*cellI+1, 3*cellI-2, 3*cellI-2);
+  }
+
+  // arrow 1
+  ctx.fillStyle='#4da6ff'; ctx.font='22px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('→', x0+8*cellI+30, y0+4*cellI);
+
+  // ── Kernel ──
+  ctx.fillStyle='#000'; ctx.fillRect(kx-4,ky-4,3*cellK+8,3*cellK+8);
+  drawKernelGrid(ctx, animState.kernel, kx, ky, cellK, null);
+
+  // arrow 2
+  ctx.fillStyle='#4da6ff'; ctx.fillText('→', kx+3*cellK+30, ky+1.5*cellK);
+
+  // ── Output ──
+  ctx.fillStyle='#000'; ctx.fillRect(ox-2,y0-2,6*cellO+4,6*cellO+4);
+  // bg
+  for(let r=0;r<6;r++) for(let c=0;c<6;c++){
+    ctx.fillStyle='#0b0f14';
+    ctx.fillRect(ox+c*cellO, y0+r*cellO, cellO, cellO);
+  }
+  // filled cells
+  if(animState.computed.length>0){
+    let mn=Infinity,mx=-Infinity;
+    animState.computed.forEach(p=>{const v=animState.outData[p.r][p.c];mn=Math.min(mn,v);mx=Math.max(mx,v);});
+    if(mx===mn) mx=mn+1;
+    animState.computed.forEach(pos=>{
+      const v=animState.outData[pos.r][pos.c];
+      const norm=(v-mn)/(mx-mn);
+      const pv=Math.round(norm*255);
+      ctx.fillStyle=`rgb(${pv},${pv},${pv})`;
+      ctx.fillRect(ox+pos.c*cellO, y0+pos.r*cellO, cellO, cellO);
+    });
+  }
+  // highlight current output cell
+  if(animState.computed.length>0){
+    const last=animState.computed[animState.computed.length-1];
+    ctx.strokeStyle='#f0883e'; ctx.lineWidth=2;
+    ctx.strokeRect(ox+last.c*cellO+1, y0+last.r*cellO+1, cellO-2, cellO-2);
+  }
+  // grid lines
+  ctx.strokeStyle='#2a3340'; ctx.lineWidth=1;
+  for(let r=0;r<=6;r++){ctx.beginPath();ctx.moveTo(ox,y0+r*cellO);ctx.lineTo(ox+6*cellO,y0+r*cellO);ctx.stroke();}
+  for(let c=0;c<=6;c++){ctx.beginPath();ctx.moveTo(ox+c*cellO,y0);ctx.lineTo(ox+c*cellO,y0+6*cellO);ctx.stroke();}
+}
+
+// Kernel tab switching
+document.querySelectorAll('.kernel-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.kernel-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    animState.kernelKey = tab.dataset.k;
+    animState.kernel = KERNELS[tab.dataset.k];
+    animReset();
+  });
+});
+
+// Controls
+const btnPlay  = document.getElementById('btnPlay');
+const btnStep  = document.getElementById('btnStep');
+const btnReset = document.getElementById('btnReset');
+const speedSl  = document.getElementById('speedSlider');
+const speedLbl = document.getElementById('speedLabel');
+
+speedSl.addEventListener('input', () => {
+  speedLbl.textContent = speedSl.value + '×';
+  if(animState.playing){ clearInterval(animState.timer); startAnim(); }
+});
+
+function startAnim(){
+  const delay = Math.round(1200 / parseInt(speedSl.value));
+  animState.timer = setInterval(() => {
+    if(animState.row>5){
+      clearInterval(animState.timer);
+      animState.playing=false;
+      btnPlay.textContent='▶ Play';
+      btnPlay.classList.remove('active');
+      return;
+    }
+    animStep();
+  }, delay);
+}
+
+btnPlay.addEventListener('click', () => {
+  if(animState.playing){
+    clearInterval(animState.timer);
+    animState.playing=false;
+    btnPlay.textContent='▶ Play';
+    btnPlay.classList.remove('active');
+  } else {
+    if(animState.row>5) animReset();
+    animState.playing=true;
+    btnPlay.textContent='⏸ Pause';
+    btnPlay.classList.add('active');
+    startAnim();
+  }
+});
+
+btnStep.addEventListener('click', () => {
+  if(animState.playing){ clearInterval(animState.timer); animState.playing=false; btnPlay.textContent='▶ Play'; btnPlay.classList.remove('active'); }
+  animStep();
+});
+
+btnReset.addEventListener('click', () => {
+  if(animState.playing){ clearInterval(animState.timer); animState.playing=false; btnPlay.textContent='▶ Play'; btnPlay.classList.remove('active'); }
+  animReset();
+});
+
+/* ════════════════════════════════════════
+   FILTER GALLERY (Section 5)
+   ════════════════════════════════════════ */
+const filterDefs = [
+  { id:'fc1', k:[[-1,0,1],[-2,0,2],[-1,0,1]] },
+  { id:'fc2', k:[[-1,-2,-1],[0,0,0],[1,2,1]] },
+  { id:'fc3', k:[[-2,-1,0],[-1,0,1],[0,1,2]] },
+  { id:'fc4', k:[[1/9,1/9,1/9],[1/9,1/9,1/9],[1/9,1/9,1/9]] },
+  { id:'fc5', k:[[0,-1,0],[-1,5,-1],[0,-1,0]] },
+  { id:'fc6', k:[[0,0,0],[0,1,0],[0,0,0]] }
+];
+filterDefs.forEach(({id,k}) => {
+  const cv=document.getElementById(id);
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,120,120);
+  drawKernelGrid(ctx, k, 6, 6, 36, null);
+});
+
+/* ════════════════════════════════════════
+   EDGE APPLY DEMO (Section 5)
+   ════════════════════════════════════════ */
+function applyConv(img, k){
+  const H=img.length, W=img[0].length, F=k.length;
+  const out=[];
+  for(let r=0;r<H-F+1;r++){ const row=[];
+    for(let c=0;c<W-F+1;c++){
+      let s=0; for(let m=0;m<F;m++) for(let n=0;n<F;n++) s+=img[r+m][c+n]*k[m][n];
+      row.push(s);
+    } out.push(row);
+  } return out;
+}
+
+function normDisplay(mat){
+  let mn=Infinity,mx=-Infinity;
+  mat.flat().forEach(v=>{mn=Math.min(mn,v);mx=Math.max(mx,v);});
+  if(mx===mn) return mat.map(r=>r.map(()=>128));
+  return mat.map(r=>r.map(v=>Math.round((v-mn)/(mx-mn)*255)));
+}
+
+function drawEdgeApply(){
+  const cv=document.getElementById('edgeApplyCanvas');
+  const ctx=cv.getContext('2d');
+  const cellSize=22;
+
+  // 8×8 "L" letter image
+  const letterL=[];
+  for(let r=0;r<8;r++){
+    const row=[];
+    for(let c=0;c<8;c++){
+      if(c===1 && r>=0 && r<=6) row.push(220);
+      else if(r===6 && c>=1 && c<=6) row.push(220);
+      else row.push(15);
+    }
+    letterL.push(row);
+  }
+
+  const vedge=KERNELS.vedge, hedge=KERNELS.hedge;
+  const vmap=normDisplay(applyConv(letterL,vedge));
+  const hmap=normDisplay(applyConv(letterL,hedge));
+  const rawv=applyConv(letterL,vedge), rawh=applyConv(letterL,hedge);
+  const combo=rawv.map((row,r)=>row.map((v,c)=>Math.min(255,Math.round(Math.sqrt(v*v+rawh[r][c]*rawh[r][c])))));
+  const comboN=normDisplay(combo);
+
+  const panels=[
+    {img:letterL, label:'Original (8×8)', H:8,W:8},
+    {img:vmap, label:'Vertical edges (6×6)', H:6,W:6},
+    {img:hmap, label:'Horizontal edges (6×6)', H:6,W:6},
+    {img:comboN, label:'Combined magnitude (6×6)', H:6,W:6}
+  ];
+
+  let ox=20;
+  panels.forEach(({img,label,H,W}) => {
+    const oy=20;
+    ctx.fillStyle='#000'; ctx.fillRect(ox-2,oy-2,W*cellSize+4,H*cellSize+4);
+    img.forEach((row,r)=>row.forEach((v,c)=>{
+      ctx.fillStyle=`rgb(${v},${v},${v})`;
+      ctx.fillRect(ox+c*cellSize,oy+r*cellSize,cellSize,cellSize);
+    }));
+    ctx.strokeStyle='#1a2230'; ctx.lineWidth=1;
+    for(let r=0;r<=H;r++){ctx.beginPath();ctx.moveTo(ox,oy+r*cellSize);ctx.lineTo(ox+W*cellSize,oy+r*cellSize);ctx.stroke();}
+    for(let c=0;c<=W;c++){ctx.beginPath();ctx.moveTo(ox+c*cellSize,oy);ctx.lineTo(ox+c*cellSize,oy+H*cellSize);ctx.stroke();}
+    ctx.fillStyle='#7a8899'; ctx.font='11px IBM Plex Mono,monospace';
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText(label, ox+W*cellSize/2, oy+H*cellSize+18);
+    ox += W*cellSize + 40;
+  });
+}
+
+/* ════════════════════════════════════════
+   FEATURE MAP DIAGRAM (Section 6)
+   ════════════════════════════════════════ */
+function drawFeatureMap(){
+  const cv=document.getElementById('featureMapCanvas');
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  const img8=ANIM_INPUT;
+  const filts=[KERNELS.vedge, KERNELS.hedge, KERNELS.blur, KERNELS.sharp];
+  const filtNames=['Vertical Edge','Horizontal Edge','Blur','Sharpen'];
+  const filtColors=['#00d4aa','#4da6ff','#f0c27f','#c084fc'];
+
+  const cellI=18, cellO=18;
+  const x0=20, y0=40;
+
+  // input
+  ctx.fillStyle='#000'; ctx.fillRect(x0-2,y0-2,8*cellI+4,8*cellI+4);
+  drawImageGrid(ctx, img8, x0, y0, cellI, null, null);
+  ctx.fillStyle='#7a8899'; ctx.font='11px IBM Plex Mono,monospace';
+  ctx.textAlign='center';
+  ctx.fillText('Input (8×8)', x0+4*cellI, y0+8*cellI+16);
+
+  // arrow
+  ctx.fillStyle='#4da6ff'; ctx.font='20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('→', x0+8*cellI+28, y0+4*cellI);
+
+  // 4 feature maps
+  let fx=x0+8*cellI+56;
+  filts.forEach((filt,i)=>{
+    const fmap=normDisplay(applyConv(img8,filt));
+    const fy=y0;
+    ctx.fillStyle='#000'; ctx.fillRect(fx-2,fy-2,6*cellO+4,6*cellO+4);
+    ctx.strokeStyle=filtColors[i]; ctx.lineWidth=2;
+    ctx.strokeRect(fx-3,fy-3,6*cellO+6,6*cellO+6);
+    fmap.forEach((row,r)=>row.forEach((v,c)=>{
+      ctx.fillStyle=`rgb(${v},${v},${v})`;
+      ctx.fillRect(fx+c*cellO,fy+r*cellO,cellO,cellO);
+    }));
+    ctx.fillStyle=filtColors[i]; ctx.font='10px IBM Plex Mono,monospace';
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText(filtNames[i], fx+3*cellO, fy+6*cellO+16);
+    fx+=6*cellO+24;
+  });
+
+  // braces label
+  const allStart=x0+8*cellI+56, allEnd=fx-24;
+  ctx.strokeStyle='#2a3340'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(allStart, y0-20); ctx.lineTo(allEnd, y0-20); ctx.stroke();
+  ctx.fillStyle='#7a8899'; ctx.font='11px IBM Plex Mono,monospace';
+  ctx.textAlign='center';
+  ctx.fillText('Output: 4 feature maps, each (6×6)', (allStart+allEnd)/2, y0-26);
+}
+
+/* ════════════════════════════════════════
+   PADDING DIAGRAM (Section 7)
+   ════════════════════════════════════════ */
+function drawPadding(){
+  const cv=document.getElementById('paddingCanvas');
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  const cell=26, P=1, inner=4;
+  const total=inner+2*P;
+  const ox=(cv.width-total*cell)/2, oy=20;
+
+  // padded background (zeros)
+  for(let r=0;r<total;r++) for(let c=0;c<total;c++){
+    const isPad=(r<P||r>=total-P||c<P||c>=total-P);
+    ctx.fillStyle=isPad?'#1a1010':'#000';
+    ctx.fillRect(ox+c*cell,oy+r*cell,cell,cell);
+    if(isPad){
+      ctx.fillStyle='rgba(255,92,106,0.25)';
+      ctx.fillRect(ox+c*cell,oy+r*cell,cell,cell);
+      ctx.fillStyle='rgba(255,92,106,0.6)';
+    } else {
+      ctx.fillStyle='rgba(255,255,255,0.15)';
+    }
+    ctx.font='10px IBM Plex Mono,monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(isPad?'0':'■', ox+c*cell+cell/2, oy+r*cell+cell/2);
+  }
+  // grid
+  ctx.strokeStyle='#2a3340'; ctx.lineWidth=1;
+  for(let r=0;r<=total;r++){ctx.beginPath();ctx.moveTo(ox,oy+r*cell);ctx.lineTo(ox+total*cell,oy+r*cell);ctx.stroke();}
+  for(let c=0;c<=total;c++){ctx.beginPath();ctx.moveTo(ox+c*cell,oy);ctx.lineTo(ox+c*cell,oy+total*cell);ctx.stroke();}
+
+  // inner border highlight
+  ctx.strokeStyle='#00d4aa'; ctx.lineWidth=2;
+  ctx.strokeRect(ox+P*cell, oy+P*cell, inner*cell, inner*cell);
+
+  ctx.fillStyle='#7a8899'; ctx.font='11px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('Red = zero-padding (P=1)  ·  Teal border = original 4×4 image', ox+total*cell/2, oy+total*cell+18);
+}
+
+/* ════════════════════════════════════════
+   STRIDE DIAGRAM (Section 7)
+   ════════════════════════════════════════ */
+function drawStride(){
+  const cv=document.getElementById('strideCanvas');
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  const cell=24, F=3;
+  // A 6×6 input
+  const img6=[];
+  for(let r=0;r<6;r++){const row=[];for(let c=0;c<6;c++) row.push(30+c*30+r*10); img6.push(row);}
+
+  function drawStrideRow(ox, oy, stride, label, labelColor){
+    ctx.fillStyle='#7a8899'; ctx.font='11px IBM Plex Mono,monospace';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillStyle=labelColor;
+    ctx.fillText(label, ox, oy+3*cell);
+
+    const lx=ox+120;
+    ctx.fillStyle='#000'; ctx.fillRect(lx-2,oy-2,6*cell+4,6*cell+4);
+    drawImageGrid(ctx,img6,lx,oy,cell,null,null);
+
+    // show filter positions
+    const positions=[];
+    for(let r=0;r+F<=6;r+=stride) for(let c=0;c+F<=6;c+=stride) positions.push({r,c});
+    positions.forEach((p,i)=>{
+      const alpha=0.1+i*0.06;
+      ctx.fillStyle=`rgba(0,212,170,${Math.min(alpha,0.35)})`;
+      ctx.fillRect(lx+p.c*cell,oy+p.r*cell,F*cell,F*cell);
+      ctx.strokeStyle='rgba(0,212,170,0.5)'; ctx.lineWidth=1;
+      ctx.strokeRect(lx+p.c*cell,oy+p.r*cell,F*cell,F*cell);
+    });
+
+    ctx.fillStyle='#7a8899'; ctx.font='10px IBM Plex Mono,monospace';
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText(`${positions.length} positions`, lx+3*cell, oy+6*cell+15);
+
+    // output size
+    const H_out=Math.floor((6-F)/stride)+1;
+    const rx=lx+6*cell+50;
+    ctx.fillStyle='#4da6ff'; ctx.font='16px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('→', rx-14, oy+3*cell);
+    ctx.fillStyle='#000'; ctx.fillRect(rx,oy+(3-H_out/2)*cell,H_out*cell,H_out*cell);
+    for(let r=0;r<H_out;r++) for(let c=0;c<H_out;c++){
+      ctx.fillStyle='#2a3340'; ctx.fillRect(rx+c*cell+1,oy+(3-H_out/2)*cell+r*cell+1,cell-2,cell-2);
+    }
+    ctx.strokeStyle=labelColor; ctx.lineWidth=1.5;
+    ctx.strokeRect(rx,oy+(3-H_out/2)*cell,H_out*cell,H_out*cell);
+    ctx.fillStyle='#7a8899'; ctx.font='10px IBM Plex Mono,monospace';
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText(`(${H_out}×${H_out})`, rx+H_out*cell/2, oy+(3+H_out/2)*cell+15);
+  }
+
+  drawStrideRow(20, 16, 1, 'S = 1', '#00d4aa');
+  drawStrideRow(20, 120, 2, 'S = 2', '#f0883e');
+}
+
+/* ── INIT ── */
+window.addEventListener('load', () => {
+  drawKernelDisplay();
+  drawWorkedExample();
+  renderAnimFrame();
+  drawEdgeApply();
+  drawFeatureMap();
+  drawPadding();
+  drawStride();
+});
+</script>
+</body>
+</html>

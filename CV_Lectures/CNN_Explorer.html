@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN Pixel Explorer (2-Layer) — CSC 4315 · IUGB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:        #0b0d12;
+            --surface:   #13161f;
+            --surface2:  #1a1e2a;
+            --surface3:  #1f2438;
+            --border:    #252a3a;
+            --border2:   #313859;
+            --accent:    #00c9a7;
+            --accent-d:  #009e82;
+            --accent2:   #a78bfa;   /* layer-2 colour */
+            --accent2-d: #7c5cbf;
+            --neg:       #f05a5a;
+            --gold:      #ffc94d;
+            --text:      #dce1ef;
+            --muted:     #5a6385;
+            --mono:      'Fira Code', monospace;
+            --sans:      'Rajdhani', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; padding: 0 0 50px; }
+
+        /* ── HEADER ── */
+        header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 18px 28px; display: flex; align-items: center; gap: 18px; }
+        .logo-pill { background: var(--accent); color: #000; font-weight: 700; font-size: 11px; letter-spacing: 2px; padding: 4px 10px; border-radius: 3px; white-space: nowrap; }
+        header h1 { font-size: 1.35rem; font-weight: 700; }
+        header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        /* ── TOOLBAR ── */
+        .toolbar { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 12px 28px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+        .toolbar-group { display: flex; align-items: center; gap: 8px; }
+        .toolbar-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+        .layer-badge { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; }
+        .layer1-badge { background: rgba(0,201,167,.15); color: var(--accent); border: 1px solid rgba(0,201,167,.3); }
+        .layer2-badge { background: rgba(167,139,250,.15); color: var(--accent2); border: 1px solid rgba(167,139,250,.3); }
+        .upload-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #000; border: none; padding: 7px 16px; border-radius: 4px; font-family: var(--sans); font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; transition: background .15s; }
+        .upload-btn:hover { background: var(--accent-d); }
+        select { background: var(--surface3); color: var(--text); border: 1px solid var(--border2); padding: 6px 10px; border-radius: 4px; font-family: var(--mono); font-size: 12px; cursor: pointer; }
+        .divider { width: 1px; height: 28px; background: var(--border); margin: 0 4px; }
+
+        /* ── STEPS ROW ── */
+        .steps-row { display: flex; gap: 6px; padding: 12px 28px; border-bottom: 1px solid var(--border); background: var(--surface); flex-wrap: wrap; align-items: center; }
+        .step-btn { padding: 7px 16px; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--border2); border-radius: 4px; cursor: pointer; background: var(--surface2); color: var(--muted); transition: all .15s; white-space: nowrap; }
+        .step-btn:not(:disabled):hover { background: var(--accent); color: #000; border-color: var(--accent); }
+        .step-btn.l2:not(:disabled):hover { background: var(--accent2); color: #000; border-color: var(--accent2); }
+        .step-btn.done { border-color: var(--accent); color: var(--accent); }
+        .step-btn.done.l2 { border-color: var(--accent2); color: var(--accent2); }
+        .step-btn:disabled { cursor: not-allowed; opacity: .35; }
+        .step-sep { color: var(--border2); font-size: 16px; padding: 0 2px; }
+        .step-sep.layer-break { color: var(--muted); font-size: 10px; letter-spacing: 1px; padding: 0 6px; border-left: 1px solid var(--border2); border-right: 1px solid var(--border2); margin: 0 4px; font-family: var(--mono); }
+        #statusMsg { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+        /* ── WORKSPACE ── */
+        .workspace { padding: 20px 28px; display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+        .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .panel-title { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); align-self: flex-start; }
+        .panel-title.l2 { color: var(--accent2); }
+        .panel-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); align-self: flex-start; margin-top: -6px; }
+        .panel-connector { font-size: 22px; color: var(--border2); display: flex; align-items: center; padding-top: 55px; }
+        .panel-connector.active { color: var(--accent); }
+        .panel-connector.active.l2 { color: var(--accent2); }
+
+        /* ── LAYER DIVIDER ── */
+        .layer-divider {
+            width: 100%; display: flex; align-items: center; gap: 14px;
+            padding: 4px 28px; color: var(--muted); font-size: 10px;
+            font-family: var(--mono); letter-spacing: 1.5px;
+        }
+        .layer-divider::before, .layer-divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border2);
+        }
+
+        /* ── PIXEL TABLE ── */
+        .pixel-table { border-collapse: separate; border-spacing: 1px; font-family: var(--mono); }
+        .pixel-table .coord { font-size: 9px; color: var(--muted); text-align: center; padding: 0 3px; width: 16px; }
+        .pixel-table td.px { text-align: center; font-size: 11px; font-weight: 500; border-radius: 2px; cursor: default; transition: outline .1s; position: relative; line-height: 1; }
+        .pixel-table td.px.clickable { cursor: pointer; }
+        .pixel-table td.px.clickable:hover { outline: 2px solid var(--gold); z-index: 1; }
+        .pixel-table td.px.hi-region { outline: 2px solid var(--gold) !important; outline-offset: -1px; z-index: 2; }
+        .pixel-table td.px.hi-selected { outline: 3px solid var(--accent) !important; outline-offset: -1px; z-index: 3; }
+        .pixel-table td.px.hi-selected.l2 { outline-color: var(--accent2) !important; }
+        /* Zero-padding border */
+        .pixel-table td.px.pad-cell { background: #0a0e16 !important; color: #2a3550 !important; border: 1px dashed #1e2640; font-size: 10px !important; cursor: default !important; }
+        .pixel-table td.px.pad-cell.hi-region { background: #1a1400 !important; color: #6a5000 !important; outline: 2px solid var(--gold) !important; }
+        .pad-corner { background: transparent !important; }
+        .pad-axis-label { font-size: 8px; color: #1e2640; text-align: center; font-family: var(--mono); font-style: italic; }
+
+        /* ── KERNEL TABLE ── */
+        .kernel-table { border-collapse: separate; border-spacing: 2px; font-family: var(--mono); }
+        .kernel-table td { width: 46px; height: 46px; text-align: center; font-size: 13px; font-weight: 600; border-radius: 3px; border: 1px solid var(--border2); background: var(--surface2); }
+
+        /* ── CALC PANEL ── */
+        .calc-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 24px; max-width: 980px; margin: 0 28px 4px; font-family: var(--mono); }
+        .calc-panel-title { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+        .calc-empty { font-family: var(--sans); font-size: 13px; color: var(--muted); text-align: center; padding: 12px 0; }
+        .calc-header { font-size: 11px; color: var(--gold); margin-bottom: 10px; }
+        .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+        .calc-term { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 7px 10px; font-size: 11px; display: flex; flex-direction: column; gap: 2px; }
+        .calc-term .pos-label { color: var(--text); font-size: 10px; opacity: .6; }
+        .calc-term .val-eq  { color: var(--accent); }
+        .calc-term .val-neg { color: var(--neg); }
+        .calc-term .val-zero{ color: var(--muted); }
+        .calc-sum { border-top: 1px solid var(--border2); padding-top: 10px; font-size: 13px; color: var(--gold); display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+        .calc-sum .final { color: var(--accent); font-weight: 600; font-size: 14px; }
+        .calc-sum .final.l2 { color: var(--accent2); }
+
+        /* ── LEGEND ── */
+        .legend { display: flex; gap: 14px; font-size: 10px; color: var(--muted); font-family: var(--sans); flex-wrap: wrap; justify-content: center; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .swatch { width: 14px; height: 14px; border-radius: 2px; border: 1px solid var(--border2); }
+
+        /* ── PLACEHOLDER ── */
+        .placeholder { text-align: center; padding: 60px 40px; color: var(--muted); font-family: var(--sans); font-size: 15px; width: 100%; }
+        .placeholder strong { display: block; font-size: 22px; color: var(--text); margin-bottom: 8px; }
+        .pool-info { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: center; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-pill">CSC 4315</div>
+    <div>
+        <h1>CNN Pixel-Level Explorer — 2-Layer Network</h1>
+        <p>IUGB · School of Science and Engineering · Conv1 → ReLU1 → Pool1 → Conv2 → ReLU2</p>
+    </div>
+</header>
+
+<div class="toolbar">
+    <div class="toolbar-group">
+        <label class="upload-btn">⬆ Upload Image
+            <input type="file" id="imageInput" accept="image/*" style="display:none">
+        </label>
+    </div>
+    <div class="divider"></div>
+    <div class="toolbar-group">
+        <span class="toolbar-label">Grid</span>
+        <select id="gridSize">
+            <option value="6">6 × 6</option>
+            <option value="8" selected>8 × 8</option>
+            <option value="10">10 × 10</option>
+            <option value="12">12 × 12</option>
+        </select>
+    </div>
+    <div class="divider"></div>
+    <div class="toolbar-group">
+        <span class="layer-badge layer1-badge">Layer 1 Kernel</span>
+        <select id="kernelSelect">
+            <option value="edge">Edge Detection</option>
+            <option value="blur">Box Blur (÷9)</option>
+            <option value="sharpen">Sharpen</option>
+            <option value="emboss">Emboss</option>
+        </select>
+    </div>
+    <div class="toolbar-group">
+        <span class="layer-badge layer2-badge">Layer 2 Kernel</span>
+        <select id="kernelSelect2">
+            <option value="sharpen">Sharpen</option>
+            <option value="edge">Edge Detection</option>
+            <option value="blur">Box Blur (÷9)</option>
+            <option value="emboss">Emboss</option>
+        </select>
+    </div>
+</div>
+
+<div class="steps-row">
+    <!-- Layer 1 -->
+    <button class="step-btn" id="btnConv"  disabled>① Conv 1</button>
+    <span class="step-sep">→</span>
+    <button class="step-btn" id="btnRelu"  disabled>② ReLU 1</button>
+    <span class="step-sep">→</span>
+    <button class="step-btn" id="btnPool"  disabled>③ Pool 1 (2×2)</button>
+    <!-- Layer boundary -->
+    <span class="step-sep layer-break">LAYER 2</span>
+    <button class="step-btn l2" id="btnConv2" disabled>④ Conv 2</button>
+    <span class="step-sep">→</span>
+    <button class="step-btn l2" id="btnRelu2" disabled>⑤ ReLU 2</button>
+    <span class="step-sep">→</span>
+    <button class="step-btn l2" id="btnPool2" disabled>⑥ Pool 2 (2×2)</button>
+    <span class="step-sep">|</span>
+    <button class="step-btn" id="btnReset" disabled>↺ Reset</button>
+    <span id="statusMsg">Upload an image to begin</span>
+</div>
+
+<div class="workspace" id="workspace">
+    <div class="placeholder">
+        <strong>Upload any image to begin</strong>
+        Step through both CNN layers and click any convolution output to inspect the full dot-product calculation.
+    </div>
+</div>
+
+<div class="calc-panel" id="calcPanel">
+    <div class="calc-panel-title" id="calcTitle">Convolution Calculation Inspector</div>
+    <div id="calcContent">
+        <div class="calc-empty">After applying convolution (Layer 1 or 2), click any output pixel to see the full 9-term dot-product here.</div>
+    </div>
+</div>
+
+<script>
+// ── KERNELS ──────────────────────────────────────────────────────────────────
+const KERNELS = {
+    edge:    { name: 'Edge Detection', vals: [-1,-1,-1,-1,8,-1,-1,-1,-1] },
+    blur:    { name: 'Box Blur (÷9)',  vals: [1/9,1/9,1/9,1/9,1/9,1/9,1/9,1/9,1/9] },
+    sharpen: { name: 'Sharpen',        vals: [0,-1,0,-1,5,-1,0,-1,0] },
+    emboss:  { name: 'Emboss',         vals: [-2,-1,0,-1,1,1,0,1,2] },
+};
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let S = {
+    imgDataUrl: null,
+    // Layer 1 data
+    inputPx:  null,   // [y][x] grayscale 0-255
+    outputPx: null,   // current L1 output at each step
+    convRaw:  null,
+    convMin: 0, convMax: 0,
+    W: 8, H: 8,
+    // Pool output = input to layer 2
+    pool1Px: null,
+    W2: 0, H2: 0,
+    // Layer 2 data
+    conv2Raw: null,
+    conv2Min: 0, conv2Max: 0,
+    output2Px: null,  // current L2 output
+    pool2Px: null,
+    W3: 0, H3: 0,
+    // UI
+    step: 'none',   // none|conv|relu|pool|conv2|relu2|pool2
+    activeLayer: 1,
+    selX: null, selY: null,
+};
+
+// ── COLOR HELPERS ─────────────────────────────────────────────────────────────
+function grayBg(v) {
+    const c = Math.round(Math.max(0, Math.min(255, v)));
+    return { bg: `rgb(${c},${c},${c})`, text: c > 140 ? '#111' : '#eee' };
+}
+function convBg(v, mn, mx) {
+    if (v === 0) return { bg: '#111', text: '#555' };
+    if (v < 0) {
+        const t = Math.min(1, Math.abs(v) / Math.max(1, Math.abs(mn)));
+        return { bg: `rgb(${Math.round(40+200*t)},${Math.round(15*(1-t))},${Math.round(15*(1-t))})`, text: t > 0.45 ? '#fff' : '#ccc' };
+    }
+    const t = Math.min(1, v / Math.max(1, mx));
+    return { bg: `rgb(0,${Math.round(30+190*t)},${Math.round(30+140*t)})`, text: t > 0.45 ? '#000' : '#bbb' };
+}
+function conv2Bg(v, mn, mx) {
+    // layer-2 uses purple tones for contrast
+    if (v === 0) return { bg: '#111', text: '#555' };
+    if (v < 0) {
+        const t = Math.min(1, Math.abs(v) / Math.max(1, Math.abs(mn)));
+        return { bg: `rgb(${Math.round(40+200*t)},${Math.round(15*(1-t))},${Math.round(15*(1-t))})`, text: t > 0.45 ? '#fff' : '#ccc' };
+    }
+    const t = Math.min(1, v / Math.max(1, mx));
+    return { bg: `rgb(${Math.round(50+130*t)},${Math.round(20+80*t)},${Math.round(60+180*t)})`, text: t > 0.45 ? '#fff' : '#bbb' };
+}
+function reluBg(v)  { return v === 0 ? { bg:'#0c1218', text:'#3a4a5a' } : grayBg(Math.min(255, v)); }
+
+// ── IMAGE → PIXEL GRID ────────────────────────────────────────────────────────
+function loadImageToGrid(dataUrl, W, H, cb) {
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const img = new Image();
+    img.onload = () => {
+        canvas.getContext('2d').drawImage(img, 0, 0, W, H);
+        const d = canvas.getContext('2d').getImageData(0,0,W,H).data;
+        const px = [];
+        for (let y = 0; y < H; y++) { px[y] = []; for (let x = 0; x < W; x++) { const i=(y*W+x)*4; px[y][x]=Math.round(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]); } }
+        cb(px);
+    };
+    img.src = dataUrl;
+}
+
+// ── CONV / RELU / POOL ────────────────────────────────────────────────────────
+function convolve(px, W, H, kernel) {
+    const out=[], raw=[]; let mn=Infinity, mx=-Infinity;
+    for (let y=0;y<H;y++) { out[y]=[]; raw[y]=[]; for (let x=0;x<W;x++) {
+        let s=0,ki=0;
+        for (let ky=-1;ky<=1;ky++) for (let kx=-1;kx<=1;kx++) {
+            const py=y+ky, px2=x+kx;
+            s += ((py>=0&&py<H&&px2>=0&&px2<W)?px[py][px2]:0) * kernel[ki++];
+        }
+        out[y][x]=s; raw[y][x]=s; if(s<mn)mn=s; if(s>mx)mx=s;
+    } }
+    return { out, raw, mn, mx };
+}
+function reluGrid(px) { return px.map(row => row.map(v => Math.max(0,v))); }
+function maxPool(px, W, H) {
+    const nW=Math.floor(W/2), nH=Math.floor(H/2), out=[];
+    for (let y=0;y<nH;y++) { out[y]=[]; for (let x=0;x<nW;x++) {
+        out[y][x]=Math.max(px[y*2]?.[x*2]??0, px[y*2]?.[x*2+1]??0, px[y*2+1]?.[x*2]??0, px[y*2+1]?.[x*2+1]??0);
+    } }
+    return { out, nW, nH };
+}
+
+// ── PIXEL TABLE ───────────────────────────────────────────────────────────────
+function cellSize(N) { return N<=6?58:N<=8?50:N<=10?43:37; }
+
+function renderPixelTable(px, W, H, mode, mn, mx, clickable, withPadding=false, layer=1) {
+    const cs = cellSize(Math.max(W,H));
+    const tbl = document.createElement('table');
+    tbl.className = 'pixel-table';
+
+    if (withPadding) {
+        // Header row
+        const hr = document.createElement('tr');
+        hr.appendChild(Object.assign(document.createElement('td'),{className:'coord pad-corner'}));
+        const ph = document.createElement('td'); ph.className='pad-axis-label'; ph.textContent='pad'; hr.appendChild(ph);
+        for (let x=0;x<W;x++) { const td=document.createElement('td'); td.className='coord'; td.textContent=x; hr.appendChild(td); }
+        const ph2=document.createElement('td'); ph2.className='pad-axis-label'; ph2.textContent='pad'; hr.appendChild(ph2);
+        tbl.appendChild(hr);
+
+        for (let rowGroup=-1; rowGroup<=H; rowGroup++) {
+            const tr = document.createElement('tr');
+            const rh = document.createElement('td');
+            rh.className = (rowGroup<0||rowGroup>=H)?'pad-axis-label':'coord';
+            rh.textContent= (rowGroup<0||rowGroup>=H)?'pad':rowGroup;
+            tr.appendChild(rh);
+
+            for (let colGroup=-1; colGroup<=W; colGroup++) {
+                const isPad = rowGroup<0||rowGroup>=H||colGroup<0||colGroup>=W;
+                const td = document.createElement('td');
+                td.dataset.py = rowGroup+1; td.dataset.px = colGroup+1;
+                td.style.width=cs+'px'; td.style.height=(cs-4)+'px';
+                td.style.fontSize=(cs<=43?10:11)+'px';
+                if (isPad) {
+                    td.className='px pad-cell'; td.textContent='0';
+                } else {
+                    td.className='px';
+                    td.dataset.x=colGroup; td.dataset.y=rowGroup;
+                    const v=px[rowGroup][colGroup];
+                    const {bg,text}=grayBg(v);
+                    td.style.background=bg; td.style.color=text;
+                    td.textContent=Number.isInteger(v)?v:v.toFixed(1);
+                }
+                tr.appendChild(td);
+            }
+            tbl.appendChild(tr);
+        }
+    } else {
+        // Standard table
+        const hr = document.createElement('tr');
+        hr.appendChild(Object.assign(document.createElement('td'),{className:'coord'}));
+        for (let x=0;x<W;x++) { const td=document.createElement('td'); td.className='coord'; td.textContent=x; hr.appendChild(td); }
+        tbl.appendChild(hr);
+
+        for (let y=0;y<H;y++) {
+            const tr=document.createElement('tr');
+            const rh=document.createElement('td'); rh.className='coord'; rh.textContent=y; tr.appendChild(rh);
+            for (let x=0;x<W;x++) {
+                const td=document.createElement('td');
+                td.className='px'+(clickable?' clickable':'');
+                td.dataset.x=x; td.dataset.y=y;
+                td.style.width=cs+'px'; td.style.height=cs+'px';
+                td.style.fontSize=(cs<=43?10:11)+'px';
+                const v=px[y][x];
+                let bg,text;
+                if (mode==='gray')        ({bg,text}=grayBg(v));
+                else if (mode==='conv')   ({bg,text}=convBg(v,mn,mx));
+                else if (mode==='conv2')  ({bg,text}=conv2Bg(v,mn,mx));
+                else if (mode==='relu'||mode==='relu2') ({bg,text}=reluBg(v));
+                else if (mode==='pool')   ({bg,text}=grayBg(Math.max(0,Math.min(255,v))));
+                td.style.background=bg; td.style.color=text;
+                td.textContent=Number.isInteger(v)?v:v.toFixed(1);
+                if (clickable) td.addEventListener('click',()=>onOutputCellClick(x,y,layer));
+                tr.appendChild(td);
+            }
+            tbl.appendChild(tr);
+        }
+    }
+    return tbl;
+}
+
+// ── KERNEL TABLE ─────────────────────────────────────────────────────────────
+function renderKernelTable(kernel, l2=false) {
+    const tbl=document.createElement('table'); tbl.className='kernel-table';
+    for (let r=0;r<3;r++) {
+        const tr=document.createElement('tr');
+        for (let c=0;c<3;c++) {
+            const td=document.createElement('td');
+            const v=kernel.vals[r*3+c];
+            td.textContent=Number.isInteger(v)?v:v.toFixed(3);
+            td.style.color=v<0?'var(--neg)':v>0?(l2?'var(--accent2)':'var(--accent)'):'var(--muted)';
+            tr.appendChild(td);
+        }
+        tbl.appendChild(tr);
+    }
+    return tbl;
+}
+
+// ── CLICK INSPECTOR ───────────────────────────────────────────────────────────
+function onOutputCellClick(ox, oy, layer) {
+    const isConvStep = layer===1 ? S.step==='conv' : S.step==='conv2';
+    if (!isConvStep) return;
+    S.selX=ox; S.selY=oy;
+
+    document.querySelectorAll('.pixel-table td.px').forEach(td => td.classList.remove('hi-region','hi-selected'));
+
+    // 3×3 window in padded input table
+    const tPYs = new Set([oy, oy+1, oy+2]);
+    const tPXs = new Set([ox, ox+1, ox+2]);
+    const inputTableId = layer===1 ? '#inputTable' : '#pool1Table';
+    document.querySelectorAll(`${inputTableId} td.px`).forEach(td => {
+        if (tPYs.has(+td.dataset.py) && tPXs.has(+td.dataset.px)) td.classList.add('hi-region');
+    });
+    const outId = layer===1 ? '#outputTable' : '#output2Table';
+    document.querySelectorAll(`${outId} td.px`).forEach(td => {
+        if (+td.dataset.x===ox && +td.dataset.y===oy) {
+            td.classList.add('hi-selected');
+            if (layer===2) td.classList.add('l2');
+        }
+    });
+    showCalcPanel(ox, oy, layer);
+}
+
+function showCalcPanel(ox, oy, layer) {
+    const kernelKey = layer===1
+        ? document.getElementById('kernelSelect').value
+        : document.getElementById('kernelSelect2').value;
+    const kernel = KERNELS[kernelKey];
+    const sourcePx = layer===1 ? S.inputPx : S.pool1Px;
+    const W = layer===1 ? S.W  : S.W2;
+    const H = layer===1 ? S.H  : S.H2;
+    const accentVar = layer===1 ? 'var(--accent)' : 'var(--accent2)';
+
+    const terms=[]; let sum=0, ki=0;
+    for (let ky=-1;ky<=1;ky++) for (let kx=-1;kx<=1;kx++) {
+        const py=oy+ky, px2=ox+kx;
+        const padded=py<0||py>=H||px2<0||px2>=W;
+        const pv=padded?0:sourcePx[py][px2];
+        const kv=kernel.vals[ki++];
+        const prod=pv*kv; sum+=prod;
+        terms.push({ label:padded?`I[pad]`:`I[${py}][${px2}]`, kLabel:`K[${ky+1}][${kx+1}]`, pv, kv, prod, padded,
+            kvStr:Number.isInteger(kv)?kv:kv.toFixed(3),
+            prodStr:Number.isInteger(prod)?prod:prod.toFixed(2) });
+    }
+
+    document.getElementById('calcTitle').textContent =
+        `Layer ${layer} Convolution Inspector · ${kernel.name}`;
+    document.getElementById('calcTitle').style.color = layer===2 ? 'var(--accent2)' : 'var(--accent)';
+
+    document.getElementById('calcContent').innerHTML = `
+        <div class="calc-header">
+            Output[${oy}][${ox}] — ${kernel.name} applied at (row=${oy}, col=${ox})
+            &nbsp;·&nbsp; Layer ${layer} · Zero-padding at borders
+        </div>
+        <div class="calc-grid">
+            ${terms.map(t=>`
+            <div class="calc-term">
+                <span class="pos-label">${t.label} × ${t.kLabel}</span>
+                <span class="${t.prod>0?'val-eq':t.prod<0?'val-neg':'val-zero'}">
+                    ${t.pv} × (${t.kvStr}) = ${t.prod>0?'+':''}${t.prodStr}
+                    ${t.padded?'<span style="color:var(--muted);font-size:9px"> [padded]</span>':''}
+                </span>
+            </div>`).join('')}
+        </div>
+        <div class="calc-sum">
+            <span style="opacity:.7">Raw sum: ${sum.toFixed(2)}</span>
+            <span class="final ${layer===2?'l2':''}" style="color:${accentVar}">→ Output[${oy}][${ox}] = ${sum.toFixed(2)}</span>
+            <span style="color:var(--muted);font-size:10px">(after ReLU: ${Math.max(0,sum).toFixed(2)})</span>
+        </div>`;
+}
+
+// ── BUILD WORKSPACE ───────────────────────────────────────────────────────────
+function buildWorkspace() {
+    const ws = document.getElementById('workspace');
+    ws.innerHTML = '';
+
+    if (!S.inputPx) {
+        ws.innerHTML = `<div class="placeholder"><strong>Upload any image to begin</strong>
+            Step through both CNN layers and click any convolution output to inspect the full dot-product.</div>`;
+        return;
+    }
+
+    const k1 = KERNELS[document.getElementById('kernelSelect').value];
+    const k2 = KERNELS[document.getElementById('kernelSelect2').value];
+    const inLayer2 = ['pool','conv2','relu2','pool2'].includes(S.step);
+
+    // ════════════════════════════════ LAYER 1 ════════════════════════════════
+    const layerLabel1 = document.createElement('div');
+    layerLabel1.className='layer-divider'; layerLabel1.textContent='LAYER 1'; ws.appendChild(layerLabel1);
+
+    // Input panel
+    const inPanel=document.createElement('div'); inPanel.className='panel';
+    inPanel.innerHTML=`<div class="panel-title">Input Pixel Grid</div>
+        <div class="panel-sub">${S.W}×${S.H} px · Grayscale [0–255] · zero-pad border shown</div>`;
+    const inTable=renderPixelTable(S.inputPx,S.W,S.H,'gray',0,255,false,true,1);
+    inTable.id='inputTable'; inPanel.appendChild(inTable); ws.appendChild(inPanel);
+
+    // conv symbol
+    const a1=document.createElement('div');
+    a1.className='panel-connector'+(S.step!=='none'?' active':'');
+    a1.textContent='✱'; ws.appendChild(a1);
+
+    // Kernel 1 panel
+    const k1Panel=document.createElement('div'); k1Panel.className='panel';
+    k1Panel.innerHTML=`<div class="panel-title">Layer 1 Kernel</div><div class="panel-sub">${k1.name}</div>`;
+    k1Panel.appendChild(renderKernelTable(k1,false)); ws.appendChild(k1Panel);
+
+    const a2=document.createElement('div');
+    a2.className='panel-connector'+(S.step!=='none'?' active':'');
+    a2.textContent='→'; ws.appendChild(a2);
+
+    // Layer-1 output panel
+    const out1Panel=document.createElement('div'); out1Panel.className='panel';
+    if (S.step==='none') {
+        out1Panel.innerHTML=`<div class="panel-title">L1 Output — Waiting</div>
+            <div class="panel-sub">Press ① Conv 1 to begin</div>`;
+        const ph=document.createElement('div');
+        ph.style.cssText=`width:${S.W*cellSize(S.W)}px;height:${S.H*cellSize(S.H)}px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;font-family:var(--sans);border:1px dashed var(--border2);border-radius:4px;`;
+        ph.textContent='→ output appears here'; out1Panel.appendChild(ph);
+
+    } else if (S.step==='conv') {
+        out1Panel.innerHTML=`<div class="panel-title">L1 Output — Convolution (raw)</div>
+            <div class="panel-sub">Click any cell to inspect the dot-product ↓</div>`;
+        const t=renderPixelTable(S.outputPx,S.W,S.H,'conv',S.convMin,S.convMax,true,false,1);
+        t.id='outputTable'; out1Panel.appendChild(t);
+        out1Panel.appendChild(makeLegend());
+
+    } else if (S.step==='relu') {
+        out1Panel.innerHTML=`<div class="panel-title">L1 Output — After ReLU</div>
+            <div class="panel-sub">max(0,x) · negatives zeroed</div>`;
+        const t=renderPixelTable(S.outputPx,S.W,S.H,'relu',0,255,false,false,1);
+        t.id='outputTable'; out1Panel.appendChild(t);
+
+    } else if (inLayer2) {
+        // show pool result as "L1 final output"
+        const pW=S.W2, pH=S.H2;
+        out1Panel.innerHTML=`<div class="panel-title">L1 Output — Pool (2×2)</div>
+            <div class="panel-sub">${S.W}×${S.H} → ${pW}×${pH} · stride 2</div>`;
+        const t=renderPixelTable(S.pool1Px,pW,pH,'pool',0,255,false,false,1);
+        t.id='outputTable'; out1Panel.appendChild(t);
+        const pi=document.createElement('div'); pi.className='pool-info'; pi.style.marginTop='6px';
+        pi.textContent='Each 2×2 block → maximum value'; out1Panel.appendChild(pi);
+    }
+    ws.appendChild(out1Panel);
+
+    // ════════════════════════════════ LAYER 2 ════════════════════════════════
+    if (!inLayer2) return;
+
+    const layerLabel2=document.createElement('div');
+    layerLabel2.className='layer-divider';
+    layerLabel2.style.color='var(--accent2)';
+    layerLabel2.textContent='LAYER 2'; ws.appendChild(layerLabel2);
+
+    // Pool-1 output (= L2 input) — with padding border
+    const p1Panel=document.createElement('div'); p1Panel.className='panel';
+    p1Panel.style.borderColor='rgba(167,139,250,.3)';
+    p1Panel.innerHTML=`<div class="panel-title l2">L2 Input (Pool 1 output)</div>
+        <div class="panel-sub">${S.W2}×${S.H2} px · zero-pad border shown</div>`;
+    const p1Tbl=renderPixelTable(S.pool1Px,S.W2,S.H2,'gray',0,255,false,true,2);
+    p1Tbl.id='pool1Table'; p1Panel.appendChild(p1Tbl); ws.appendChild(p1Panel);
+
+    const a3=document.createElement('div');
+    a3.className='panel-connector active l2'; a3.textContent='✱'; ws.appendChild(a3);
+
+    // Kernel 2 panel
+    const k2Panel=document.createElement('div'); k2Panel.className='panel';
+    k2Panel.style.borderColor='rgba(167,139,250,.3)';
+    k2Panel.innerHTML=`<div class="panel-title l2">Layer 2 Kernel</div><div class="panel-sub">${k2.name}</div>`;
+    k2Panel.appendChild(renderKernelTable(k2,true)); ws.appendChild(k2Panel);
+
+    const a4=document.createElement('div');
+    a4.className='panel-connector active l2'; a4.textContent='→'; ws.appendChild(a4);
+
+    // L2 output
+    const out2Panel=document.createElement('div'); out2Panel.className='panel';
+    out2Panel.style.borderColor='rgba(167,139,250,.3)';
+
+    if (S.step==='conv2') {
+        out2Panel.innerHTML=`<div class="panel-title l2">L2 Output — Convolution (raw)</div>
+            <div class="panel-sub">Click any cell to inspect the dot-product ↓</div>`;
+        const t=renderPixelTable(S.output2Px,S.W2,S.H2,'conv2',S.conv2Min,S.conv2Max,true,false,2);
+        t.id='output2Table'; out2Panel.appendChild(t);
+        out2Panel.appendChild(makeLegend(true));
+
+    } else if (S.step==='relu2') {
+        out2Panel.innerHTML=`<div class="panel-title l2">L2 Output — After ReLU 2</div>
+            <div class="panel-sub">max(0,x) · negatives zeroed · press ⑥ Pool 2 to finish</div>`;
+        const t=renderPixelTable(S.output2Px,S.W2,S.H2,'relu2',0,255,false,false,2);
+        t.id='output2Table'; out2Panel.appendChild(t);
+
+    } else if (S.step==='pool2') {
+        const pW=S.W3, pH=S.H3;
+        out2Panel.innerHTML=`<div class="panel-title l2">L2 Output — Pool 2 (2×2)</div>
+            <div class="panel-sub">${S.W2}×${S.H2} → ${pW}×${pH} · final feature map</div>`;
+        const t=renderPixelTable(S.pool2Px,pW,pH,'pool',0,255,false,false,2);
+        t.id='output2Table'; out2Panel.appendChild(t);
+        const pi=document.createElement('div'); pi.className='pool-info'; pi.style.marginTop='6px';
+        pi.textContent=`${pW}×${pH} feature map · ready for fully-connected classifier`; out2Panel.appendChild(pi);
+    }
+    ws.appendChild(out2Panel);
+}
+
+function makeLegend(l2=false) {
+    const d=document.createElement('div'); d.className='legend'; d.style.marginTop='8px';
+    const posColor=l2?'#7c5cbf':'#00c9a7';
+    d.innerHTML=`
+        <div class="legend-item"><div class="swatch" style="background:#d62020"></div>Negative</div>
+        <div class="legend-item"><div class="swatch" style="background:#0c1218"></div>≈ Zero</div>
+        <div class="legend-item"><div class="swatch" style="background:${posColor}"></div>Positive</div>`;
+    return d;
+}
+
+// ── EVENT HANDLERS ────────────────────────────────────────────────────────────
+document.getElementById('imageInput').addEventListener('change', e => {
+    if (!e.target.files[0]) return;
+    const r=new FileReader(); r.onload=ev=>{S.imgDataUrl=ev.target.result;processNewImage();}; r.readAsDataURL(e.target.files[0]);
+});
+
+function processNewImage() {
+    const N=parseInt(document.getElementById('gridSize').value);
+    Object.assign(S,{W:N,H:N,step:'none',outputPx:null,convRaw:null,
+        pool1Px:null,W2:0,H2:0,conv2Raw:null,output2Px:null,pool2Px:null,W3:0,H3:0,selX:null,selY:null});
+    loadImageToGrid(S.imgDataUrl,N,N,px=>{
+        S.inputPx=px;
+        enableBtns(true,false,false,false,false,false,false);
+        setStatus(`Image loaded → ${N}×${N} grayscale grid · ${N*N} pixels`);
+        resetCalcPanel();
+        buildWorkspace();
+    });
+}
+
+document.getElementById('gridSize').addEventListener('change',()=>{ if(S.imgDataUrl)processNewImage(); });
+document.getElementById('kernelSelect').addEventListener('change',()=>{ if(S.step==='none'&&S.inputPx)buildWorkspace(); });
+document.getElementById('kernelSelect2').addEventListener('change',()=>{ if(['pool','conv2','relu2','pool2'].includes(S.step))buildWorkspace(); });
+
+document.getElementById('btnConv').addEventListener('click',()=>{
+    const k=KERNELS[document.getElementById('kernelSelect').value];
+    const {out,raw,mn,mx}=convolve(S.inputPx,S.W,S.H,k.vals);
+    Object.assign(S,{outputPx:out,convRaw:raw,convMin:mn,convMax:mx,step:'conv',selX:null,selY:null});
+    enableBtns(false,true,false,false,false,false,true);
+    setStatus(`Layer 1 Conv (${k.name}) · Range [${mn.toFixed(1)}, ${mx.toFixed(1)}] · Click output cells to inspect`);
+    document.getElementById('btnConv').classList.add('done');
+    resetCalcPanel('Click any Layer 1 output cell to see the full 9-term dot-product.');
+    buildWorkspace();
+});
+
+document.getElementById('btnRelu').addEventListener('click',()=>{
+    S.outputPx=reluGrid(S.outputPx); S.step='relu';
+    enableBtns(false,false,true,false,false,false,true);
+    setStatus('Layer 1 ReLU applied · Negative activations zeroed');
+    document.getElementById('btnRelu').classList.add('done');
+    resetCalcPanel('ReLU = max(0,x). Dark cells were negative. Ready for Pool 1.');
+    buildWorkspace();
+});
+
+document.getElementById('btnPool').addEventListener('click',()=>{
+    const {out,nW,nH}=maxPool(S.outputPx,S.W,S.H);
+    S.pool1Px=out; S.W2=nW; S.H2=nH; S.step='pool';
+    enableBtns(false,false,false,true,false,false,true);
+    setStatus(`Pool 1 applied · ${S.W}×${S.H} → ${nW}×${nH} · Layer 2 ready`);
+    document.getElementById('btnPool').classList.add('done');
+    resetCalcPanel(`Pool 1 done. ${nW}×${nH} feature map is now the input to Layer 2. Press ④ Conv 2.`);
+    buildWorkspace();
+});
+
+document.getElementById('btnConv2').addEventListener('click',()=>{
+    const k=KERNELS[document.getElementById('kernelSelect2').value];
+    const {out,raw,mn,mx}=convolve(S.pool1Px,S.W2,S.H2,k.vals);
+    Object.assign(S,{output2Px:out,conv2Raw:raw,conv2Min:mn,conv2Max:mx,step:'conv2',selX:null,selY:null});
+    enableBtns(false,false,false,false,true,false,true);
+    setStatus(`Layer 2 Conv (${k.name}) · Range [${mn.toFixed(1)}, ${mx.toFixed(1)}] · Click output cells to inspect`);
+    document.getElementById('btnConv2').classList.add('done');
+    resetCalcPanel('Click any Layer 2 output cell to inspect its dot-product.');
+    buildWorkspace();
+});
+
+document.getElementById('btnRelu2').addEventListener('click',()=>{
+    S.output2Px=reluGrid(S.output2Px); S.step='relu2';
+    enableBtns(false,false,false,false,false,true,true);
+    setStatus('Layer 2 ReLU applied · Press ⑥ Pool 2 to complete the network');
+    document.getElementById('btnRelu2').classList.add('done');
+    resetCalcPanel('ReLU 2 done. Press ⑥ Pool 2 to produce the final feature map.');
+    buildWorkspace();
+});
+
+document.getElementById('btnPool2').addEventListener('click',()=>{
+    const {out,nW,nH}=maxPool(S.output2Px,S.W2,S.H2);
+    S.pool2Px=out; S.W3=nW; S.H3=nH; S.step='pool2';
+    enableBtns(false,false,false,false,false,false,true);
+    setStatus(`Pool 2 applied · ${S.W2}×${S.H2} → ${nW}×${nH} · Final feature map complete`);
+    document.getElementById('btnPool2').classList.add('done');
+    resetCalcPanel(`Pool 2 complete. ${nW}×${nH} feature map is the final output — ready for a fully-connected classifier.`);
+    buildWorkspace();
+});
+
+document.getElementById('btnReset').addEventListener('click',()=>{
+    if(!S.inputPx) return;
+    Object.assign(S,{step:'none',outputPx:null,convRaw:null,
+        pool1Px:null,W2:0,H2:0,conv2Raw:null,output2Px:null,pool2Px:null,W3:0,H3:0,selX:null,selY:null});
+    enableBtns(true,false,false,false,false,false,false);
+    document.querySelectorAll('.step-btn').forEach(b=>b.classList.remove('done'));
+    setStatus('Reset · Ready to process again');
+    resetCalcPanel();
+    buildWorkspace();
+});
+
+function enableBtns(conv,relu,pool,conv2,relu2,pool2,reset) {
+    ['btnConv','btnRelu','btnPool','btnConv2','btnRelu2','btnPool2','btnReset']
+        .forEach((id,i)=>document.getElementById(id).disabled=![conv,relu,pool,conv2,relu2,pool2,reset][i]);
+}
+function setStatus(msg) { document.getElementById('statusMsg').textContent=msg; }
+function resetCalcPanel(msg='Click any convolution output pixel to see the full 9-term dot-product here.') {
+    document.getElementById('calcTitle').textContent='Convolution Calculation Inspector';
+    document.getElementById('calcTitle').style.color='var(--accent)';
+    document.getElementById('calcContent').innerHTML=`<div class="calc-empty">${msg}</div>`;
+}
+</script>
+</body>
+</html>

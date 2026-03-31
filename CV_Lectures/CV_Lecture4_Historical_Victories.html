@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Lecture 4 · Historical Victories</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #f5f0e8;
+    --bg2:      #ede7d9;
+    --surface:  #fff;
+    --border:   #c8bfa8;
+    --border2:  #e0d8c8;
+    --ink:      #1a1610;
+    --ink2:     #3d3828;
+    --muted:    #7a7060;
+    --red:      #b02020;
+    --navy:     #0f2744;
+    --gold:     #b8860b;
+    --teal:     #1a6b5c;
+    --blue:     #1a4a8c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, var(--red), var(--navy));
+    z-index: 999; transition: width 0.1s;
+  }
+
+  /* ── MASTHEAD / HERO ── */
+  .masthead {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 0;
+    border-bottom: 4px double var(--gold);
+    position: relative;
+    overflow: hidden;
+  }
+  .masthead-top {
+    border-bottom: 1px solid #444;
+    padding: 10px 60px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: #888; letter-spacing: 2px;
+  }
+  .masthead-top b { color: var(--gold); }
+  .masthead-main {
+    padding: 48px 60px 40px;
+    text-align: center;
+    position: relative;
+  }
+  .masthead-rule {
+    border: none; border-top: 1px solid #444;
+    margin: 0 60px 20px;
+  }
+  .masthead-tag {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 16px;
+  }
+  .masthead h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(42px, 6vw, 84px);
+    font-weight: 900; line-height: 1.0;
+    color: #fff; margin-bottom: 8px;
+    letter-spacing: -1px;
+    opacity: 0; animation: fadeIn 0.8s 0.2s ease forwards;
+  }
+  .masthead h1 em { color: var(--gold); font-style: italic; }
+  .masthead-deck {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: 20px; color: #aaa; max-width: 640px;
+    margin: 14px auto 0; line-height: 1.5;
+    opacity: 0; animation: fadeIn 0.8s 0.45s ease forwards;
+  }
+  .masthead-byline {
+    margin-top: 24px; display: flex; justify-content: center;
+    gap: 24px; flex-wrap: wrap;
+    opacity: 0; animation: fadeIn 0.8s 0.65s ease forwards;
+  }
+  .masthead-byline span {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: #888; border: 1px solid #444;
+    padding: 3px 12px; border-radius: 2px;
+  }
+  .masthead-byline span b { color: var(--gold); }
+  .page-badge-hero {
+    display: inline-block; font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 600; background: var(--navy);
+    color: #fff; padding: 3px 10px; border-radius: 2px;
+    letter-spacing: 1px; margin-left: 12px; vertical-align: middle;
+  }
+
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1020px; margin: 0 auto; padding: 0 48px; }
+
+  section {
+    padding: 64px 0 52px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  section.visible { opacity: 1; transform: none; }
+
+  .section-header-row {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; margin-bottom: 10px;
+  }
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--red);
+  }
+  .page-badge {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    font-weight: 600; color: var(--bg); background: var(--navy);
+    padding: 3px 10px; border-radius: 2px; letter-spacing: 1px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 44px); font-weight: 900;
+    color: var(--ink); margin-bottom: 24px; line-height: 1.1;
+  }
+  h3 {
+    font-family: 'Playfair Display', serif; font-size: 22px;
+    font-weight: 700; color: var(--navy); margin: 32px 0 12px;
+  }
+  p { color: var(--ink2); margin-bottom: 16px; }
+  strong { color: var(--ink); }
+  em { color: var(--red); font-style: italic; }
+
+  /* drop cap */
+  .dropcap::first-letter {
+    font-family: 'Playfair Display', serif; font-size: 72px; font-weight: 900;
+    float: left; line-height: 0.8; margin-right: 8px; margin-top: 10px;
+    color: var(--navy);
+  }
+
+  /* pull quote */
+  .pullquote {
+    border-top: 3px solid var(--navy);
+    border-bottom: 1px solid var(--navy);
+    margin: 36px 0; padding: 24px 0;
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: 22px; color: var(--navy); line-height: 1.5;
+    text-align: center;
+  }
+  .pullquote cite {
+    display: block; margin-top: 10px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    font-style: normal; letter-spacing: 2px; color: var(--muted);
+  }
+
+  /* callouts */
+  .callout {
+    background: var(--surface); border-left: 4px solid var(--navy);
+    padding: 18px 22px; margin: 24px 0;
+    box-shadow: 2px 2px 0 var(--border);
+  }
+  .callout.red    { border-color: var(--red); }
+  .callout.gold   { border-color: var(--gold); background: #fffdf5; }
+  .callout.teal   { border-color: var(--teal); }
+  .callout-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--navy); margin-bottom: 8px; font-weight: 600;
+  }
+  .callout.red  .callout-title { color: var(--red); }
+  .callout.gold .callout-title { color: var(--gold); }
+  .callout.teal .callout-title { color: var(--teal); }
+  .callout p { color: var(--ink2); font-size: 15px; margin: 0; }
+
+  /* two-col */
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: start;
+  }
+  @media(max-width:700px) { .two-col { grid-template-columns:1fr; } }
+
+  .three-col {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;
+  }
+  @media(max-width:760px) { .three-col { grid-template-columns:1fr; } }
+
+  /* code */
+  code {
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+    background: var(--bg2); border: 1px solid var(--border);
+    padding: 2px 6px; border-radius: 2px; color: var(--navy);
+  }
+  pre {
+    background: var(--ink); border: none;
+    border-radius: 4px; padding: 22px 26px; margin: 20px 0; overflow-x: auto;
+    box-shadow: 3px 3px 0 var(--border);
+  }
+  pre code {
+    background: none; border: none; padding: 0;
+    font-size: 13px; line-height: 1.8; color: #e8e0d0;
+  }
+  .kw  { color: #f0c27f; }
+  .cm  { color: #7a8870; font-style: italic; }
+  .str { color: #a8d8a8; }
+  .num { color: #f0a070; }
+  .fn  { color: #80c8f0; }
+
+  /* table */
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+  th {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+    padding: 10px 14px; border-bottom: 2px solid var(--ink);
+    text-align: left; background: var(--bg2);
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border2); color: var(--ink2); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg2); }
+
+  /* diagram wrap */
+  .diagram-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 28px; margin: 28px 0; text-align: center;
+    box-shadow: 3px 3px 0 var(--border);
+  }
+  .diagram-caption {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--muted); margin-top: 14px; font-style: italic;
+  }
+  canvas { display: block; margin: 0 auto; }
+
+  /* nav dots */
+  .lecture-nav {
+    position: fixed; right: 22px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 100;
+  }
+  .nav-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--border); border: 1px solid var(--muted);
+    cursor: pointer; transition: background 0.2s, transform 0.2s;
+  }
+  .nav-dot:hover, .nav-dot.active { background: var(--red); transform: scale(1.4); border-color: var(--red); }
+  @media(max-width:900px) { .lecture-nav { display:none; } }
+
+  /* ── TIMELINE ── */
+  .timeline {
+    position: relative; padding-left: 40px; margin: 36px 0;
+  }
+  .timeline::before {
+    content: ''; position: absolute; left: 12px; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+  .timeline-item {
+    position: relative; margin-bottom: 40px; cursor: pointer;
+  }
+  .timeline-dot {
+    position: absolute; left: -34px; top: 6px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--bg); border: 3px solid var(--muted);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .timeline-item:hover .timeline-dot,
+  .timeline-item.active .timeline-dot {
+    border-color: var(--red); transform: scale(1.3);
+    background: var(--red);
+  }
+  .timeline-year {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 2px; color: var(--red); margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .timeline-title {
+    font-family: 'Playfair Display', serif; font-size: 20px;
+    font-weight: 700; color: var(--ink); margin-bottom: 6px;
+  }
+  .timeline-body {
+    font-size: 15px; color: var(--ink2); line-height: 1.7;
+  }
+
+  /* ── ERA CARDS ── */
+  .era-tabs {
+    display: flex; gap: 0; margin-bottom: 0;
+    border-bottom: 2px solid var(--ink);
+  }
+  .era-tab {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    font-weight: 600; padding: 10px 20px;
+    border: 1px solid var(--border); border-bottom: none;
+    background: var(--bg2); color: var(--muted); cursor: pointer;
+    transition: all 0.15s; letter-spacing: 1px; text-transform: uppercase;
+    margin-right: 4px; border-radius: 2px 2px 0 0;
+  }
+  .era-tab:hover { background: var(--bg); color: var(--ink); }
+  .era-tab.active { background: var(--surface); color: var(--red); border-color: var(--ink); border-bottom-color: var(--surface); font-weight: 700; }
+
+  .era-panel {
+    display: none; background: var(--surface);
+    border: 1px solid var(--ink); border-top: none;
+    padding: 32px;
+    box-shadow: 3px 3px 0 var(--border);
+  }
+  .era-panel.active { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  @media(max-width:700px) { .era-panel.active { grid-template-columns:1fr; } }
+
+  .era-stat {
+    display: inline-block; background: var(--navy); color: #fff;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 4px 12px; margin: 3px 3px 3px 0; border-radius: 2px; letter-spacing: 1px;
+  }
+  .era-stat.red  { background: var(--red); }
+  .era-stat.gold { background: var(--gold); color: var(--ink); }
+  .era-stat.teal { background: var(--teal); }
+
+  /* accuracy chart */
+  .acc-bar-wrap { margin: 12px 0; }
+  .acc-bar-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--muted); margin-bottom: 4px;
+  }
+  .acc-bar-track {
+    height: 22px; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 2px; overflow: hidden; position: relative;
+  }
+  .acc-bar-fill {
+    height: 100%; border-radius: 2px;
+    display: flex; align-items: center; padding-left: 8px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600;
+    transition: width 0.8s ease;
+  }
+
+  /* comparison table special */
+  .compare-table td:first-child { font-weight: 700; color: var(--ink); }
+
+  /* summary cards */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+    gap: 20px; margin-top: 28px;
+  }
+  .summary-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-top: 3px solid var(--navy); padding: 20px;
+    box-shadow: 2px 2px 0 var(--border);
+  }
+  .summary-card .num-big {
+    font-family: 'Playfair Display', serif; font-size: 44px;
+    color: var(--red); line-height: 1; margin-bottom: 8px; font-weight: 900;
+  }
+  .summary-card p { font-size: 14px; color: var(--muted); margin: 0; }
+
+  /* chapter ornament */
+  .ornament {
+    text-align: center; margin: 8px 0 28px;
+    color: var(--muted); letter-spacing: 12px; font-size: 13px;
+  }
+
+  footer {
+    text-align: center; padding: 48px 40px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--muted); border-top: 3px double var(--border);
+    background: var(--bg2);
+  }
+  footer span { color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<nav class="lecture-nav" id="lecnav">
+  <div class="nav-dot active"></div>
+  <div class="nav-dot"></div>
+  <div class="nav-dot"></div>
+  <div class="nav-dot"></div>
+  <div class="nav-dot"></div>
+  <div class="nav-dot"></div>
+  <div class="nav-dot"></div>
+  <div class="nav-dot"></div>
+</nav>
+
+<!-- ══ MASTHEAD ══ -->
+<header class="masthead">
+  <div class="masthead-top">
+    <span>CSC-4315 · INTRODUCTION TO AI</span>
+    <span>COMPUTER VISION SERIES · <b>LECTURE 4 OF 5</b></span>
+    <span>IUGB · SPRING 2026</span>
+  </div>
+  <hr class="masthead-rule">
+  <div class="masthead-main">
+    <div class="masthead-tag">Computer Vision · Historical Record</div>
+    <h1><em>Historical</em> Victories <span class="page-badge-hero">p. 1</span></h1>
+    <p class="masthead-deck">From a handwritten digit in 1998 to a revolution in 2012 — the three milestones that proved deep learning could see.</p>
+    <div class="masthead-byline">
+      <span>Lecture <b>4 / 5</b></span>
+      <span>Topic <b>Computer Vision</b></span>
+      <span>IUGB · <b>Spring 2026</b></span>
+      <span>Duration <b>~50 min</b></span>
+    </div>
+  </div>
+</header>
+
+<!-- ══ SEC 0 · CONTEXT ══ -->
+<section id="sec-0">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 1</div>
+      <span class="page-badge">p. 2</span>
+    </div>
+    <h2>Before the Revolution</h2>
+    <div class="ornament">· · ·</div>
+
+    <p class="dropcap">For most of the 20th century, teaching a machine to recognize an image was an unsolved problem that frustrated the best researchers in the field. The dominant approach — hand-engineering features like SIFT, HOG, and Gabor filters, then feeding them to classical classifiers — produced incremental gains but hit a ceiling. Computers could barely tell a cat from a dog. The gap between machine and human vision felt insurmountable.</p>
+
+    <p>The story of how that gap closed is not a smooth curve of steady progress. It is a story of three decisive moments — separated by years of quiet work — each of which changed what the field believed was possible.</p>
+
+    <div class="pullquote">
+      "The hand-engineering of features is the bottleneck. If we can learn the features, we can learn everything."
+      <cite>— The thesis underlying deep learning, 1980s–2010s</cite>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">📌 Lecture Roadmap</div>
+      <p>L1 Images ✓ &nbsp;·&nbsp; L2 Convolution ✓ &nbsp;·&nbsp; L3 CNN Architecture ✓ &nbsp;·&nbsp; <strong>Lecture 4</strong> Historical Victories (today) &nbsp;·&nbsp; L5 Transfer Learning</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SEC 1 · TIMELINE ══ -->
+<section id="sec-1">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 2</div>
+      <span class="page-badge">p. 3</span>
+    </div>
+    <h2>Three Moments That Changed Everything</h2>
+    <div class="ornament">· · ·</div>
+
+    <div class="two-col">
+      <div>
+        <div class="timeline">
+          <div class="timeline-item active" id="tl-1998">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">1998</div>
+            <div class="timeline-title">LeNet-5 — The Proof of Concept</div>
+            <div class="timeline-body">Yann LeCun and colleagues at Bell Labs deploy the first practical CNN. LeNet-5 reads handwritten ZIP codes on US mail at 98.9% accuracy — at scale, in production. For the first time, a neural network beats hand-engineered systems at a real-world visual task.</div>
+          </div>
+          <div class="timeline-item" id="tl-winter">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">1998 – 2011</div>
+            <div class="timeline-title">The Long Wait</div>
+            <div class="timeline-body">CNNs work on small problems but fail to scale. SVMs and random forests dominate computer vision research. Deep learning enters a "winter" — underfunded, underestimated, kept alive by a handful of researchers including LeCun, Hinton, and Bengio.</div>
+          </div>
+          <div class="timeline-item" id="tl-2012">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">2012</div>
+            <div class="timeline-title">AlexNet — The Watershed</div>
+            <div class="timeline-body">Alex Krizhevsky, Ilya Sutskever, and Geoffrey Hinton win ImageNet with a top-5 error of 15.3% — shattering the previous record of 26.2%. The margin is so large that competitors immediately abandon their approaches and begin building CNNs. Deep learning is born as a mainstream discipline.</div>
+          </div>
+          <div class="timeline-item" id="tl-2013">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">2013</div>
+            <div class="timeline-title">Dogs vs. Cats — The Democratization</div>
+            <div class="timeline-body">Microsoft sponsors a Kaggle competition: classify 25,000 images of cats and dogs. CNN-based entries achieve &gt;99% accuracy. The competition introduces CNN-based vision to thousands of practitioners worldwide and becomes the canonical "first CNN project" for a generation of engineers.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="diagram-wrap" style="margin-top:0;">
+          <canvas id="timelineChart" width="380" height="360"></canvas>
+          <div class="diagram-caption">ImageNet top-5 error rate, 2010–2015. The 2012 drop was the largest single-year improvement in the competition's history.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SEC 2 · LENET ══ -->
+<section id="sec-2">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 3</div>
+      <span class="page-badge">p. 4</span>
+    </div>
+    <h2>1998 — LeNet-5 &amp; MNIST</h2>
+    <div class="ornament">· · ·</div>
+
+    <p class="dropcap">Yann LeCun spent the late 1980s and 1990s arguing that the right way to do image recognition was to let the network learn its own features through gradient descent — rather than hand-engineer them. His 1989 paper on backpropagation in convolutional networks was largely ignored. His 1998 paper, <em>"Gradient-Based Learning Applied to Document Recognition,"</em> was not.</p>
+
+    <p>The paper introduced <strong>LeNet-5</strong> and the <strong>MNIST dataset</strong> — 60,000 handwritten digit images (28×28 pixels, grayscale) that became the "Hello, World" of machine learning for the next two decades. More importantly, it demonstrated LeNet-5 running on real US Postal Service mail — an industrial deployment of a CNN at scale.</p>
+
+    <h3>The MNIST Dataset</h3>
+    <div class="two-col">
+      <div>
+        <table>
+          <tr><th>Property</th><th>Value</th></tr>
+          <tr><td>Image size</td><td>28 × 28 pixels, grayscale</td></tr>
+          <tr><td>Training set</td><td>60,000 images</td></tr>
+          <tr><td>Test set</td><td>10,000 images</td></tr>
+          <tr><td>Classes</td><td>10 (digits 0–9)</td></tr>
+          <tr><td>LeNet-5 error</td><td><strong>0.7%</strong> (99.3% accuracy)</td></tr>
+          <tr><td>Best human</td><td>~0.2% error</td></tr>
+          <tr><td>Simple MLP</td><td>~1.6% error</td></tr>
+        </table>
+
+        <div class="callout gold">
+          <div class="callout-title">💡 Why MNIST Still Matters</div>
+          <p>MNIST remains the standard benchmarking dataset for new network architectures. If your architecture cannot reach &gt;99% on MNIST, something is fundamentally wrong. It is simple enough to train in minutes but complex enough to distinguish good designs from bad ones.</p>
+        </div>
+      </div>
+      <div>
+        <div class="diagram-wrap" style="margin:0;">
+          <canvas id="mnistSamplesCanvas" width="340" height="240"></canvas>
+          <div class="diagram-caption">Sample MNIST digits — each a 28×28 grayscale array. Every pixel is an integer in [0, 255].</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>LeNet-5 Architecture</h3>
+    <p>LeNet-5 was a 7-layer network — tiny by today's standards, but revolutionary in 1998. Study how it directly prefigures the architecture we built in Lecture 3:</p>
+
+    <div class="diagram-wrap">
+      <canvas id="lenetCanvas" width="820" height="160"></canvas>
+      <div class="diagram-caption">LeNet-5 (1998). The Conv → Pool → Conv → Pool → FC pattern is identical to the SimpleCNN we coded in Lecture 3.</div>
+    </div>
+
+    <div class="callout teal">
+      <div class="callout-title">🔑 What LeNet Proved</div>
+      <p>Three things: (1) Learned features are better than hand-crafted ones. (2) The same architecture generalizes across the entire distribution of handwriting styles — one model, all writers. (3) CNNs are deployable in production at scale. The postal system was processing millions of envelopes per day.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SEC 3 · THE WINTER ══ -->
+<section id="sec-3">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 4</div>
+      <span class="page-badge">p. 5</span>
+    </div>
+    <h2>The Long Wait — Why Did It Take 14 Years?</h2>
+    <div class="ornament">· · ·</div>
+
+    <p>LeNet worked beautifully on digits. But when researchers tried to scale it to larger, more complex images, it failed — and the AI community largely concluded that neural networks were too expensive and unstable to be practical for real visual tasks. Three structural barriers explain the delay.</p>
+
+    <div class="three-col" style="margin:32px 0;">
+      <div class="callout" style="margin:0;">
+        <div class="callout-title">🖥️ Barrier 1 — Compute</div>
+        <p>Training a network on millions of images required hardware that did not exist. A CPU-based training run on ImageNet would take <strong>weeks</strong>. GPUs capable of parallelizing the matrix operations didn't become programmable for general computation until CUDA was released by NVIDIA in 2007.</p>
+      </div>
+      <div class="callout" style="margin:0;">
+        <div class="callout-title">💾 Barrier 2 — Data</div>
+        <p>Neural networks are data-hungry. MNIST has 60,000 images — enough for digits. Real-world vision requires millions of diverse examples. The ImageNet dataset (14M+ labeled images, 1,000 categories) was only assembled and released in 2009 by Fei-Fei Li's group at Stanford.</p>
+      </div>
+      <div class="callout" style="margin:0; border-color:var(--red);">
+        <div class="callout-title" style="color:var(--red);">⚡ Barrier 3 — Algorithms</div>
+        <p>Deeper networks suffered vanishing gradients. Training reliably required ReLU activations (widespread by 2010), Dropout regularization (Hinton, 2012), and better weight initialization schemes — all of which were unavailable or unappreciated in 1998.</p>
+      </div>
+    </div>
+
+    <div class="pullquote">
+      "Everyone in the field thought neural networks were dead. Then AlexNet happened."
+      <cite>— Commonly expressed sentiment in retrospective accounts, 2012</cite>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SEC 4 · ALEXNET ══ -->
+<section id="sec-4">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 5</div>
+      <span class="page-badge">p. 6</span>
+    </div>
+    <h2>2012 — AlexNet &amp; the ImageNet Revolution</h2>
+    <div class="ornament">· · ·</div>
+
+    <p class="dropcap">The ImageNet Large Scale Visual Recognition Challenge (ILSVRC) was launched in 2010 as the hardest image recognition benchmark ever created — 1.2 million training images, 1,000 object categories, ranging from dogs and cats to specific breeds and species. In 2010 and 2011 the winning methods used hand-engineered features combined with SVMs and ensemble methods, achieving top-5 error rates of 28.2% and 25.8% respectively.</p>
+
+    <p>In 2012 a team of three from the University of Toronto — PhD student Alex Krizhevsky, Ilya Sutskever, and their supervisor Geoffrey Hinton — entered a deep convolutional neural network they called <strong>AlexNet</strong>. Their top-5 error: <strong>15.3%</strong>. The second-place team: 26.2%. The gap was not an improvement. It was a demolition.</p>
+
+    <h3>Why AlexNet Won</h3>
+    <div class="two-col">
+      <div>
+        <table>
+          <tr><th>Innovation</th><th>Why it mattered</th></tr>
+          <tr><td><strong>GPU training</strong></td><td>Trained on 2× NVIDIA GTX 580 GPUs — first major CNN to use GPU parallelism at scale. Reduced training from weeks to days.</td></tr>
+          <tr><td><strong>ReLU activations</strong></td><td>Replaced tanh/sigmoid. Solved vanishing gradients, enabling deeper networks to train stably.</td></tr>
+          <tr><td><strong>Dropout (p=0.5)</strong></td><td>Applied after the two large FC layers. Halved overfitting. Network generalized from training images to test images far better.</td></tr>
+          <tr><td><strong>Data augmentation</strong></td><td>Random crops, flips, and color jitter during training artificially expanded the dataset ~2,048×.</td></tr>
+          <tr><td><strong>Local Response Norm</strong></td><td>Lateral inhibition between nearby filter channels — inspired by neuroscience. (Later superseded by BatchNorm.)</td></tr>
+          <tr><td><strong>Depth — 8 layers</strong></td><td>5 conv layers + 3 FC layers. Deeper than any previously trained network of comparable scale.</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="diagram-wrap" style="margin:0;">
+          <canvas id="alexnetCanvas" width="340" height="280"></canvas>
+          <div class="diagram-caption">AlexNet (2012) — 60M parameters, 5 conv layers, 3 FC layers. Trained on 2 GPUs simultaneously.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>AlexNet vs. LeNet — Side by Side</h3>
+    <div class="diagram-wrap">
+      <canvas id="comparisonCanvas" width="820" height="220"></canvas>
+      <div class="diagram-caption">LeNet-5 (1998) vs. AlexNet (2012). Same fundamental pattern — Conv, Pool, FC — but massively deeper, wider, and equipped with modern training techniques.</div>
+    </div>
+
+    <table class="compare-table">
+      <tr><th>Property</th><th>LeNet-5 (1998)</th><th>AlexNet (2012)</th></tr>
+      <tr><td>Input size</td><td>32 × 32 × 1 (grayscale)</td><td>224 × 224 × 3 (color)</td></tr>
+      <tr><td>Conv layers</td><td>2</td><td>5</td></tr>
+      <tr><td>FC layers</td><td>2</td><td>3</td></tr>
+      <tr><td>Parameters</td><td>~60,000</td><td>~60,000,000</td></tr>
+      <tr><td>Activation</td><td>tanh / sigmoid</td><td>ReLU</td></tr>
+      <tr><td>Regularization</td><td>None</td><td>Dropout + Data Aug</td></tr>
+      <tr><td>Hardware</td><td>CPU</td><td>2× GPU</td></tr>
+      <tr><td>Dataset</td><td>MNIST (60K images, 10 classes)</td><td>ImageNet (1.2M images, 1000 classes)</td></tr>
+      <tr><td>Top accuracy</td><td>99.3%</td><td>84.7% (top-5: 84.7%)</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ══ SEC 5 · DOGS vs CATS ══ -->
+<section id="sec-5">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 6</div>
+      <span class="page-badge">p. 7</span>
+    </div>
+    <h2>2013 — Dogs vs. Cats &amp; the Democratization</h2>
+    <div class="ornament">· · ·</div>
+
+    <p class="dropcap">AlexNet proved deep learning worked at the research frontier. But in 2012, training a CNN still required significant expertise — CUDA programming, careful hyperparameter tuning, expensive hardware. The Kaggle platform changed that.</p>
+
+    <p>In 2013, Microsoft Research sponsored a Kaggle competition: given 25,000 labeled images of cats and dogs (12,500 each), build a binary classifier. The dataset, contributed by Petfinder.com, contained diverse real-world photographs — different breeds, poses, lighting conditions, and backgrounds. No carefully centered, uniform backgrounds like MNIST.</p>
+
+    <div class="two-col">
+      <div>
+        <h3 style="margin-top:8px;">The Competition Results</h3>
+        <table>
+          <tr><th>Approach</th><th>Log-loss</th><th>Accuracy (approx)</th></tr>
+          <tr><td>Random baseline</td><td>0.693</td><td>50%</td></tr>
+          <tr><td>Hand-crafted + SVM</td><td>~0.12</td><td>~88%</td></tr>
+          <tr><td>Simple CNN from scratch</td><td>~0.06</td><td>~95%</td></tr>
+          <tr><td><strong>Top CNN entries</strong></td><td><strong>&lt;0.005</strong></td><td><strong>&gt;99.5%</strong></td></tr>
+          <tr><td>Human performance</td><td>—</td><td>~99.7%</td></tr>
+        </table>
+
+        <div class="callout teal">
+          <div class="callout-title">🌍 Why This Matters</div>
+          <p>The Dogs vs. Cats competition introduced CNN-based computer vision to tens of thousands of practitioners who were not deep learning researchers. It became the canonical entry-point project — the same role that "Titanic survival prediction" plays for tabular ML. Every major tutorial on CNNs still uses it today.</p>
+        </div>
+      </div>
+      <div>
+        <div class="diagram-wrap" style="margin:0;">
+          <canvas id="dogsVsCatsCanvas" width="340" height="260"></canvas>
+          <div class="diagram-caption">A CNN's decision boundary for cats vs. dogs. After training, the network separates the two classes with a margin that is nearly impossible to cross.</div>
+        </div>
+        <div class="callout" style="margin-top:20px;">
+          <div class="callout-title">📅 Chronological Correction</div>
+          <p>The Dogs vs. Cats competition ran in 2013 — <em>after</em> AlexNet's 2012 victory, not before. AlexNet is what made &gt;99% accuracy on this task achievable in the first place. The competition was designed to let practitioners experience that capability firsthand.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SEC 6 · INTERACTIVE ARCHITECTURE EXPLORER ══ -->
+<section id="sec-6">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 7</div>
+      <span class="page-badge">p. 8</span>
+    </div>
+    <h2>Architecture Explorer</h2>
+    <div class="ornament">· · ·</div>
+    <p>Click each era to see the full architecture diagram and key statistics.</p>
+
+    <div class="era-tabs">
+      <div class="era-tab active" data-era="lenet">LeNet-5 · 1998</div>
+      <div class="era-tab" data-era="alexnet">AlexNet · 2012</div>
+      <div class="era-tab" data-era="dogcat">Dogs vs. Cats · 2013</div>
+    </div>
+
+    <div class="era-panel active" id="era-lenet">
+      <div>
+        <h3 style="margin-top:0;">LeNet-5 (1998)</h3>
+        <div style="margin-bottom:14px;">
+          <span class="era-stat">INPUT: 32×32×1</span>
+          <span class="era-stat">2 CONV LAYERS</span>
+          <span class="era-stat gold">~60K PARAMS</span>
+          <span class="era-stat teal">99.3% on MNIST</span>
+        </div>
+        <p style="font-size:15px; color:var(--ink2);">LeNet-5 introduced the core CNN recipe: alternating convolution and pooling layers, followed by fully-connected layers and a classifier. Its key innovation was <strong>parameter sharing</strong> — the same filter weights applied across the entire image — which dramatically reduced the number of parameters compared to a dense network.</p>
+        <p style="font-size:15px; color:var(--ink2);">Activation: tanh (sigmoid in the final layer). No Dropout. No data augmentation. Trained on a single CPU over hours.</p>
+        <div class="acc-bar-wrap">
+          <div class="acc-bar-label">MNIST accuracy: 99.3%</div>
+          <div class="acc-bar-track">
+            <div class="acc-bar-fill" style="width:99.3%; background:var(--teal); color:var(--bg);">99.3%</div>
+          </div>
+        </div>
+        <div class="acc-bar-wrap">
+          <div class="acc-bar-label">Simple MLP baseline: 98.4%</div>
+          <div class="acc-bar-track">
+            <div class="acc-bar-fill" style="width:98.4%; background:var(--muted); color:var(--bg);">98.4%</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <canvas id="eraLenetCanvas" width="340" height="280"></canvas>
+      </div>
+    </div>
+
+    <div class="era-panel" id="era-alexnet">
+      <div>
+        <h3 style="margin-top:0;">AlexNet (2012)</h3>
+        <div style="margin-bottom:14px;">
+          <span class="era-stat">INPUT: 224×224×3</span>
+          <span class="era-stat">5 CONV + 3 FC</span>
+          <span class="era-stat gold">~60M PARAMS</span>
+          <span class="era-stat red">15.3% TOP-5 ERROR</span>
+        </div>
+        <p style="font-size:15px; color:var(--ink2);">AlexNet stacked the same Conv+Pool pattern from LeNet much deeper and wider, and added three critical modern techniques: ReLU activations, Dropout regularization, and GPU-accelerated training. It was the first network to prove these techniques could work together at scale on a million-image dataset.</p>
+        <p style="font-size:15px; color:var(--ink2);">The network was split across two GPUs due to memory constraints — each GPU handled half the filters per layer, communicating only in certain layers.</p>
+        <div class="acc-bar-wrap">
+          <div class="acc-bar-label">AlexNet Top-5 accuracy: 84.7%</div>
+          <div class="acc-bar-track">
+            <div class="acc-bar-fill" style="width:84.7%; background:var(--red); color:#fff;">84.7%</div>
+          </div>
+        </div>
+        <div class="acc-bar-wrap">
+          <div class="acc-bar-label">Previous best (2011): 73.8%</div>
+          <div class="acc-bar-track">
+            <div class="acc-bar-fill" style="width:73.8%; background:var(--muted); color:var(--bg);">73.8%</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <canvas id="eraAlexCanvas" width="340" height="280"></canvas>
+      </div>
+    </div>
+
+    <div class="era-panel" id="era-dogcat">
+      <div>
+        <h3 style="margin-top:0;">Dogs vs. Cats (2013)</h3>
+        <div style="margin-bottom:14px;">
+          <span class="era-stat">25,000 IMAGES</span>
+          <span class="era-stat">2 CLASSES</span>
+          <span class="era-stat gold">TRANSFER LEARNING</span>
+          <span class="era-stat teal">&gt;99.5% TOP ENTRIES</span>
+        </div>
+        <p style="font-size:15px; color:var(--ink2);">The top-performing entries in 2013 used a technique you will learn in Lecture 5 — <strong>Transfer Learning</strong>: take AlexNet (already trained on ImageNet), remove its final layer, and fine-tune the remaining weights on the dogs/cats dataset. The ImageNet features — which included cats, dogs, and thousands of other animals — transferred directly.</p>
+        <p style="font-size:15px; color:var(--ink2);">This demonstrated that a single large pre-trained network could be repurposed for new tasks in hours rather than days, with far less data — the key insight that makes modern AI practical.</p>
+        <div class="acc-bar-wrap">
+          <div class="acc-bar-label">Top CNN entry: &gt;99.5%</div>
+          <div class="acc-bar-track">
+            <div class="acc-bar-fill" style="width:99.5%; background:var(--navy); color:#fff;">&gt;99.5%</div>
+          </div>
+        </div>
+        <div class="acc-bar-wrap">
+          <div class="acc-bar-label">Hand-crafted features + SVM: ~88%</div>
+          <div class="acc-bar-track">
+            <div class="acc-bar-fill" style="width:88%; background:var(--muted); color:var(--bg);">~88%</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <canvas id="eraDCCanvas" width="340" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SEC 7 · LESSONS ══ -->
+<section id="sec-7">
+  <div class="container">
+    <div class="section-header-row">
+      <div class="section-label">Section 8</div>
+      <span class="page-badge">p. 9</span>
+    </div>
+    <h2>What These Three Stories Teach Us</h2>
+    <div class="ornament">· · ·</div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="num-big">01</div>
+        <p><strong>Architecture is not enough.</strong> LeNet worked in 1998 but couldn't scale. The algorithm was correct; the infrastructure — compute, data, training tricks — wasn't ready.</p>
+      </div>
+      <div class="summary-card">
+        <div class="num-big">02</div>
+        <p><strong>GPU + Data + Depth = the trifecta.</strong> AlexNet combined all three for the first time. Remove any one of them and it fails.</p>
+      </div>
+      <div class="summary-card">
+        <div class="num-big">03</div>
+        <p><strong>Competitions drive progress.</strong> ImageNet and Kaggle created measurable benchmarks that forced researchers to produce verifiable, reproducible results.</p>
+      </div>
+      <div class="summary-card">
+        <div class="num-big">04</div>
+        <p><strong>Margins matter.</strong> A 10% improvement is interesting. AlexNet's 11-point improvement over second place was a paradigm shift. The magnitude of the gap told the community something fundamental had changed.</p>
+      </div>
+      <div class="summary-card">
+        <div class="num-big">05</div>
+        <p><strong>Democratization follows breakthrough.</strong> AlexNet was frontier research. Dogs vs. Cats made it accessible. This pattern — breakthrough then democratization — repeats in every wave of AI progress.</p>
+      </div>
+      <div class="summary-card">
+        <div class="num-big">06</div>
+        <p><strong>Transfer learning is the key.</strong> You don't need millions of images and weeks of compute. You need a good pre-trained model and a small target dataset. That's Lecture 5.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:44px; padding:28px; background:var(--surface); border:1px solid var(--border); box-shadow:3px 3px 0 var(--border);">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--red); margin-bottom:14px;">Discussion Questions</div>
+      <ol style="padding-left:22px; color:var(--ink2); display:flex; flex-direction:column; gap:14px; font-size:16px;">
+        <li>LeNet achieved 99.3% on MNIST in 1998. Why did it take 14 years for CNNs to become mainstream? Which of the three barriers — compute, data, or algorithmic — do you think was most limiting?</li>
+        <li>AlexNet had ~1,000× more parameters than LeNet (60M vs 60K). Does more parameters always mean better performance? What can go wrong when a network is too large for its dataset?</li>
+        <li>AlexNet was trained on two GPUs because one GPU didn't have enough memory for all 60M parameters. Today, a high-end GPU has 80GB of memory. What does this tell you about the relationship between hardware progress and AI capability?</li>
+        <li>The Dogs vs. Cats winners used Transfer Learning — fine-tuning an AlexNet pre-trained on ImageNet. Why would ImageNet features (1,000 categories) help with a 2-class cat/dog problem?</li>
+      </ol>
+    </div>
+
+    <div style="margin-top:36px; padding:28px; background:linear-gradient(135deg,rgba(15,39,68,0.06),rgba(26,107,92,0.04)); border:1px solid var(--navy); border-radius:4px;">
+      <div style="font-family:'Playfair Display',serif; font-size:20px; color:var(--navy); margin-bottom:10px; font-weight:700;">🔭 Looking Ahead — Lecture 5</div>
+      <p style="margin:0; color:var(--ink2);">The final lecture in this series covers <strong>Transfer Learning</strong> — the technique that makes CNNs practical for real projects with limited data. We will take a pre-trained ResNet, freeze its early layers, and fine-tune it on a small custom dataset. By the end, you will have a complete, deployable image classifier.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>CSC-4315 · Introduction to AI &nbsp;·&nbsp; <span>Computer Vision Lecture Series</span></div>
+  <div style="margin-top:6px;">International University of Grand-Bassam &nbsp;·&nbsp; School of Science and Engineering &nbsp;·&nbsp; Spring 2026</div>
+</footer>
+
+<!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
+<script>
+/* ── Scroll progress ── */
+window.addEventListener('scroll', () => {
+  const p = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+  document.getElementById('progress').style.width = (p * 100) + '%';
+});
+
+/* ── Intersection observer ── */
+const sections = document.querySelectorAll('section');
+const dots = document.querySelectorAll('.nav-dot');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      const i = [...sections].indexOf(e.target);
+      dots.forEach((d,j) => d.classList.toggle('active', i===j));
+    }
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => obs.observe(s));
+dots.forEach((d,i) => d.addEventListener('click', () => sections[i].scrollIntoView({ behavior:'smooth' })));
+
+/* ── Era tabs ── */
+document.querySelectorAll('.era-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.era-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.era-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('era-' + tab.dataset.era).classList.add('active');
+    // redraw the canvas for the activated panel
+    if (tab.dataset.era === 'lenet')   drawEraLenet();
+    if (tab.dataset.era === 'alexnet') drawEraAlex();
+    if (tab.dataset.era === 'dogcat')  drawEraDC();
+  });
+});
+
+/* ══ COLOUR PALETTE ══ */
+const C = {
+  bg: '#f5f0e8', surface: '#fff', border: '#c8bfa8',
+  ink: '#1a1610', ink2: '#3d3828', muted: '#7a7060',
+  red: '#b02020', navy: '#0f2744', gold: '#b8860b',
+  teal: '#1a6b5c', blue: '#1a4a8c',
+};
+
+/* ══════════════════════════════════
+   1. IMAGENET CHART
+   ══════════════════════════════════ */
+function drawTimelineChart() {
+  const cv = document.getElementById('timelineChart');
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = C.surface; ctx.fillRect(0,0,cv.width,cv.height);
+
+  const data = [
+    { year:'2010', err:28.2, label:'ILSVRC 2010\nBest: 28.2%' },
+    { year:'2011', err:25.8, label:'ILSVRC 2011\nBest: 25.8%' },
+    { year:'2012', err:15.3, label:'AlexNet 2012\n15.3% ← CNN', highlight:true },
+    { year:'2013', err:11.7, label:'ZFNet 2013\n11.7%' },
+    { year:'2014', err:6.7,  label:'GoogLeNet 2014\n6.7%' },
+    { year:'2015', err:3.6,  label:'ResNet 2015\n3.6%' },
+  ];
+
+  const padL=52, padR=20, padT=30, padB=52;
+  const W=cv.width-padL-padR, H=cv.height-padT-padB;
+
+  // axes
+  ctx.strokeStyle='#c8bfa8'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+H); ctx.lineTo(padL+W,padT+H); ctx.stroke();
+
+  // y grid
+  [0,10,20,30].forEach(v=>{
+    const y=padT+H-v/30*H;
+    ctx.strokeStyle='#e8e0d0'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+W,y); ctx.stroke();
+    ctx.fillStyle=C.muted; ctx.font='10px IBM Plex Mono,monospace';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(v+'%', padL-6, y);
+  });
+
+  // x axis label
+  ctx.fillStyle=C.ink; ctx.font='bold 11px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('ImageNet Top-5 Error Rate (%)', padL+W/2, padT+H+42);
+
+  const n=data.length;
+  const xs = data.map((_,i)=> padL + (i+0.5)*(W/n));
+  const ys = data.map(d  => padT + H - (d.err/30)*H);
+
+  // line
+  ctx.strokeStyle=C.navy; ctx.lineWidth=2;
+  ctx.beginPath(); xs.forEach((x,i)=>i===0?ctx.moveTo(x,ys[i]):ctx.lineTo(x,ys[i])); ctx.stroke();
+
+  // fill under line
+  ctx.beginPath();
+  ctx.moveTo(xs[0],padT+H);
+  xs.forEach((x,i)=>ctx.lineTo(x,ys[i]));
+  ctx.lineTo(xs[n-1],padT+H); ctx.closePath();
+  ctx.fillStyle='rgba(15,39,68,0.07)'; ctx.fill();
+
+  // highlight AlexNet drop
+  ctx.strokeStyle='rgba(176,32,32,0.4)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(xs[1],ys[1]); ctx.lineTo(xs[2],ys[1]); ctx.stroke();
+  ctx.setLineDash([]);
+  // annotation arrow
+  ctx.strokeStyle=C.red; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(xs[2],ys[1]+4); ctx.lineTo(xs[2],ys[2]-4); ctx.stroke();
+  ctx.fillStyle=C.red; ctx.font='bold 9px IBM Plex Mono,monospace'; ctx.textAlign='center';
+  ctx.fillText('−10.5 pts', xs[2]+28, (ys[1]+ys[2])/2);
+
+  // dots
+  data.forEach((d,i)=>{
+    ctx.fillStyle = d.highlight ? C.red : C.navy;
+    ctx.beginPath(); ctx.arc(xs[i],ys[i], d.highlight?7:5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = C.surface;
+    ctx.beginPath(); ctx.arc(xs[i],ys[i], d.highlight?4:2.5, 0, Math.PI*2); ctx.fill();
+
+    // year label
+    ctx.fillStyle=C.muted; ctx.font='10px IBM Plex Mono,monospace';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(d.year, xs[i], padT+H+6);
+
+    // value
+    ctx.fillStyle = d.highlight ? C.red : C.navy;
+    ctx.font = d.highlight ? 'bold 10px IBM Plex Mono,monospace' : '9px IBM Plex Mono,monospace';
+    ctx.textBaseline='bottom';
+    ctx.fillText(d.err+'%', xs[i], ys[i]-8);
+  });
+
+  // AlexNet label
+  ctx.fillStyle=C.red; ctx.font='bold 10px IBM Plex Mono,monospace';
+  ctx.textAlign='center';
+  ctx.fillText('← AlexNet (CNN)', xs[2]+40, ys[2]-20);
+}
+
+/* ══════════════════════════════════
+   2. MNIST SAMPLES
+   ══════════════════════════════════ */
+function drawMNISTSamples() {
+  const cv = document.getElementById('mnistSamplesCanvas');
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = C.surface; ctx.fillRect(0,0,cv.width,cv.height);
+
+  const D=220, A=140;
+  // 5 digit bitmaps: 0,1,2,3,4
+  const digits = [
+    // 0
+    [[0,D,D,D,0],[D,0,0,0,D],[D,0,0,0,D],[D,0,0,0,D],[D,0,0,0,D],[D,0,0,0,D],[0,D,D,D,0]],
+    // 1
+    [[0,0,D,0,0],[0,D,D,0,0],[0,0,D,0,0],[0,0,D,0,0],[0,0,D,0,0],[0,0,D,0,0],[0,D,D,D,0]],
+    // 2
+    [[0,D,D,D,0],[D,0,0,0,D],[0,0,0,D,0],[0,0,D,0,0],[0,D,0,0,0],[D,0,0,0,0],[D,D,D,D,D]],
+    // 3
+    [[D,D,D,D,0],[0,0,0,0,D],[0,0,0,D,0],[0,D,D,D,0],[0,0,0,0,D],[0,0,0,0,D],[D,D,D,D,0]],
+    // 4
+    [[D,0,0,D,0],[D,0,0,D,0],[D,0,0,D,0],[D,D,D,D,D],[0,0,0,D,0],[0,0,0,D,0],[0,0,0,D,0]],
+    // 7
+    [[D,D,D,D,D],[0,0,0,D,0],[0,0,D,0,0],[0,D,0,0,0],[0,D,0,0,0],[0,D,0,0,0],[0,D,0,0,0]],
+  ];
+
+  const cell=8, pad=6, cols=6;
+  const bw=5*cell+2*pad, bh=7*cell+2*pad;
+  const startX=(cv.width - cols*(bw+12))/2;
+  const startY=(cv.height - bh)/2;
+
+  digits.forEach((d,di)=>{
+    const ox=startX+di*(bw+12), oy=startY;
+    ctx.fillStyle='#000'; ctx.fillRect(ox,oy,bw,bh);
+    d.forEach((row,r)=>row.forEach((v,c)=>{
+      ctx.fillStyle=v>0?`rgb(${v},${v},${v})`:'#000';
+      ctx.fillRect(ox+pad+c*cell, oy+pad+r*cell, cell, cell);
+    }));
+    // digit label
+    ctx.fillStyle=C.muted; ctx.font='10px IBM Plex Mono,monospace';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(di===5?'7':String(di), ox+bw/2, oy+bh+5);
+  });
+  ctx.fillStyle=C.muted; ctx.font='11px IBM Plex Mono,monospace';
+  ctx.textAlign='center';
+  ctx.fillText('each: 28×28 grayscale · value range [0, 255]', cv.width/2, cv.height-6);
+}
+
+/* ══════════════════════════════════
+   3. HELPER: draw CNN architecture bar
+   ══════════════════════════════════ */
+function drawArchBar(ctx, blocks, x0, y0, canvasW) {
+  const totalW = blocks.reduce((s,b)=>s+b.w,0) + (blocks.length-1)*10;
+  let cx = x0 + (canvasW - totalW) / 2;
+  const bh = 48;
+  const my = y0 + bh/2;
+
+  blocks.forEach((b,i)=>{
+    if(i>0){
+      ctx.strokeStyle='#c8bfa8'; ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(cx-6,my);ctx.lineTo(cx-1,my);ctx.stroke();
+      ctx.fillStyle='#c8bfa8';
+      ctx.beginPath();ctx.moveTo(cx-1,my);ctx.lineTo(cx-7,my-3);ctx.lineTo(cx-7,my+3);ctx.closePath();ctx.fill();
+    }
+    ctx.fillStyle=b.color+'22';
+    ctx.strokeStyle=b.color;
+    ctx.lineWidth=1.5;
+    ctx.fillRect(cx,y0,b.w,bh);
+    ctx.strokeRect(cx,y0,b.w,bh);
+    ctx.fillStyle=b.color;
+    ctx.font=`bold 9px IBM Plex Mono,monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const lines=b.label.split('\n');
+    lines.forEach((ln,li)=>ctx.fillText(ln,cx+b.w/2,my-(lines.length-1)*7+li*13));
+    if(b.shape){
+      ctx.fillStyle=C.muted; ctx.font='8px IBM Plex Mono,monospace';
+      ctx.fillText(b.shape, cx+b.w/2, y0+bh+12);
+    }
+    cx+=b.w+10;
+  });
+}
+
+/* ══════════════════════════════════
+   4. LENET CANVAS (Section 3)
+   ══════════════════════════════════ */
+function drawLeNet() {
+  const cv=document.getElementById('lenetCanvas');
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle=C.surface; ctx.fillRect(0,0,cv.width,cv.height);
+
+  const blocks=[
+    {label:'INPUT\n32×32',  color:C.muted,  w:72,  shape:'(32,32,1)'},
+    {label:'CONV1\n6 maps', color:C.teal,   w:82,  shape:'(28,28,6)'},
+    {label:'POOL1',         color:C.blue,   w:68,  shape:'(14,14,6)'},
+    {label:'CONV2\n16 maps',color:C.teal,   w:82,  shape:'(10,10,16)'},
+    {label:'POOL2',         color:C.blue,   w:68,  shape:'(5,5,16)'},
+    {label:'FC1\n120',      color:C.navy,   w:68,  shape:'(120,)'},
+    {label:'FC2\n84',       color:C.navy,   w:68,  shape:'(84,)'},
+    {label:'OUTPUT\n10',    color:C.red,    w:68,  shape:'(10,)'},
+  ];
+  drawArchBar(ctx, blocks, 0, 40, cv.width);
+
+  ctx.fillStyle=C.gold; ctx.font='bold 11px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('LeNet-5 (1998) — Yann LeCun, Bell Labs — 60,000 parameters', cv.width/2, 18);
+}
+
+/* ══════════════════════════════════
+   5. ALEXNET CANVAS (Section 5)
+   ══════════════════════════════════ */
+function drawAlexNet() {
+  const cv=document.getElementById('alexnetCanvas');
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle=C.surface; ctx.fillRect(0,0,cv.width,cv.height);
+
+  // Vertical layer display for AlexNet (fits better in 340×280)
+  const layers=[
+    {label:'INPUT  224×224×3',     color:C.muted,  params:'—'},
+    {label:'CONV1  11×11, 96 maps',color:C.teal,   params:'34,944'},
+    {label:'POOL1  3×3, s=2',      color:C.blue,   params:'0'},
+    {label:'CONV2  5×5, 256 maps', color:C.teal,   params:'614,656'},
+    {label:'POOL2  3×3, s=2',      color:C.blue,   params:'0'},
+    {label:'CONV3  3×3, 384 maps', color:C.teal,   params:'885,120'},
+    {label:'CONV4  3×3, 384 maps', color:C.teal,   params:'1,327,488'},
+    {label:'CONV5  3×3, 256 maps', color:C.teal,   params:'884,992'},
+    {label:'FC1    4096',          color:C.navy,   params:'37.7M'},
+    {label:'FC2    4096',          color:C.navy,   params:'16.8M'},
+    {label:'OUTPUT 1000  softmax', color:C.red,    params:'4.1M'},
+  ];
+
+  const bh=20, pad=4, x0=10;
+  layers.forEach((l,i)=>{
+    const y=12+i*(bh+pad);
+    const barW=Math.min(240, cv.width-100);
+    ctx.fillStyle=l.color+'18';
+    ctx.strokeStyle=l.color+'88';
+    ctx.lineWidth=1;
+    ctx.fillRect(x0, y, barW, bh);
+    ctx.strokeRect(x0, y, barW, bh);
+    ctx.fillStyle=l.color;
+    ctx.font='bold 9px IBM Plex Mono,monospace';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText(l.label, x0+6, y+bh/2);
+    ctx.fillStyle=C.muted; ctx.font='9px IBM Plex Mono,monospace';
+    ctx.textAlign='right';
+    ctx.fillText(l.params, cv.width-6, y+bh/2);
+  });
+
+  ctx.fillStyle=C.muted; ctx.font='9px IBM Plex Mono,monospace';
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  ctx.fillText('params', cv.width-6, 4);
+  ctx.fillStyle=C.red; ctx.font='bold 10px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('AlexNet: ~60M total parameters', cv.width/2, cv.height-4);
+}
+
+/* ══════════════════════════════════
+   6. COMPARISON CANVAS (Section 5)
+   ══════════════════════════════════ */
+function drawComparison() {
+  const cv=document.getElementById('comparisonCanvas');
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle=C.surface; ctx.fillRect(0,0,cv.width,cv.height);
+
+  // LeNet row
+  ctx.fillStyle=C.teal; ctx.font='bold 10px IBM Plex Mono,monospace';
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText('LeNet-5 (1998)', 10, 35);
+
+  const lenet=[
+    {label:'INPUT',color:C.muted,w:55},
+    {label:'C1\n6',color:C.teal,w:50},
+    {label:'P1',color:C.blue,w:38},
+    {label:'C2\n16',color:C.teal,w:50},
+    {label:'P2',color:C.blue,w:38},
+    {label:'FC×2',color:C.navy,w:55},
+    {label:'OUT\n10',color:C.red,w:45},
+  ];
+  drawArchBar(ctx, lenet, 120, 14, cv.width-10);
+
+  // AlexNet row
+  ctx.fillStyle=C.red; ctx.font='bold 10px IBM Plex Mono,monospace';
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText('AlexNet (2012)', 10, 145);
+
+  const alex=[
+    {label:'INPUT',color:C.muted,w:55},
+    {label:'C1\n96',color:C.teal,w:46},
+    {label:'P',color:C.blue,w:30},
+    {label:'C2\n256',color:C.teal,w:50},
+    {label:'P',color:C.blue,w:30},
+    {label:'C3\n384',color:C.teal,w:50},
+    {label:'C4\n384',color:C.teal,w:50},
+    {label:'C5\n256',color:C.teal,w:46},
+    {label:'FC×3',color:C.navy,w:55},
+    {label:'OUT\n1000',color:C.red,w:50},
+  ];
+  drawArchBar(ctx, alex, 120, 124, cv.width-10);
+
+  // annotation
+  ctx.fillStyle=C.muted; ctx.font='9px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.fillText('Same pattern — Conv → Pool → FC — but 1000× more parameters and 5× more layers', cv.width/2, 196);
+}
+
+/* ══════════════════════════════════
+   7. DOGS vs CATS canvas
+   ══════════════════════════════════ */
+function drawDogsVsCats() {
+  const cv = document.getElementById('dogsVsCatsCanvas');
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = C.surface; ctx.fillRect(0, 0, cv.width, cv.height);
+
+  const W=cv.width, H=cv.height;
+  const cx=W/2, cy=H/2-20, r=90;
+
+  // Draw two clusters
+  function drawCluster(ox, oy, col, label, n=35) {
+    for(let i=0;i<n;i++){
+      const a=Math.random()*Math.PI*2, d=Math.random()*38;
+      const x=ox+Math.cos(a)*d, y=oy+Math.sin(a)*d;
+      ctx.fillStyle=col+'99';
+      ctx.beginPath();ctx.arc(x,y,4+Math.random()*3,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle=col; ctx.font='bold 13px Libre Baskerville,serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(label, ox, oy+55);
+  }
+
+  // decision boundary curve
+  ctx.strokeStyle=C.navy+'44'; ctx.lineWidth=2; ctx.setLineDash([4,4]);
+  ctx.beginPath();
+  ctx.moveTo(cx,20);
+  ctx.bezierCurveTo(cx+30,cy-10,cx-30,cy+10,cx,H-40);
+  ctx.stroke(); ctx.setLineDash([]);
+
+  ctx.fillStyle='rgba(176,32,32,0.05)';
+  ctx.fillRect(cx, 0, W/2, H);
+  ctx.fillStyle='rgba(15,39,68,0.05)';
+  ctx.fillRect(0, 0, cx, H);
+
+  drawCluster(cx*0.5, cy, C.navy, '🐱 Cat');
+  drawCluster(cx*1.5, cy, C.red, '🐶 Dog');
+
+  ctx.strokeStyle=C.navy; ctx.lineWidth=2; ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(cx, 20);
+  ctx.bezierCurveTo(cx+25,cy-10,cx-25,cy+10,cx,H-40);
+  ctx.stroke();
+
+  ctx.fillStyle=C.navy; ctx.font='10px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('Decision boundary — learned by CNN', cx, H-8);
+}
+
+/* ══════════════════════════════════
+   8. ERA PANEL CANVASES
+   ══════════════════════════════════ */
+function drawEraLenet() {
+  const cv=document.getElementById('eraLenetCanvas');
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle=C.surface; ctx.fillRect(0,0,cv.width,cv.height);
+
+  // Show MNIST test sample and accuracy dial
+  const D=220, A=140;
+  const digit=[[0,0,A,D,D,D,0,0],[0,0,D,0,0,0,D,0],[0,0,0,0,0,0,D,0],[0,0,0,0,0,D,0,0],[0,0,0,0,D,0,0,0],[0,0,0,D,0,0,0,0],[0,D,D,D,D,D,D,0]];
+  const cell=18, ox=30, oy=30;
+  ctx.fillStyle='#000'; ctx.fillRect(ox-2,oy-2,8*cell+4,7*cell+4);
+  digit.forEach((row,r)=>row.forEach((v,c)=>{
+    ctx.fillStyle=v>0?`rgb(${v},${v},${v})`:'#000';
+    ctx.fillRect(ox+c*cell,oy+r*cell,cell,cell);
+  }));
+  ctx.fillStyle=C.muted; ctx.font='10px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('Input: 28×28 grayscale', ox+4*cell, oy+7*cell+16);
+
+  // Arrow
+  ctx.fillStyle=C.teal; ctx.font='bold 22px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('→', 200, oy+3.5*cell);
+
+  // prediction bars
+  const probs=[0.01,0.01,0.92,0.01,0.01,0.01,0.01,0.01,0.01,0.01];
+  const bx=220, barW=90;
+  probs.forEach((p,i)=>{
+    const y=20+i*24;
+    const w=Math.round(p*barW);
+    ctx.fillStyle=i===2?C.teal:'#e0ddd5';
+    ctx.fillRect(bx,y,w,18);
+    ctx.strokeStyle='#c8bfa8'; ctx.lineWidth=0.5;
+    ctx.strokeRect(bx,y,barW,18);
+    ctx.fillStyle=C.muted; ctx.font='9px IBM Plex Mono,monospace';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(String(i), bx-4, y+9);
+    if(i===2){ ctx.fillStyle=C.ink; ctx.font='bold 9px IBM Plex Mono,monospace'; ctx.textAlign='left'; ctx.fillText('92%',bx+w+3,y+9); }
+  });
+  ctx.fillStyle=C.teal; ctx.font='bold 11px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('Predicted: "2" ✓', bx+barW/2, 265);
+}
+
+function drawEraAlex() {
+  const cv=document.getElementById('eraAlexCanvas');
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle=C.surface; ctx.fillRect(0,0,cv.width,cv.height);
+
+  // Show 3-channel color input diagram
+  const cell=10, W3=12, H3=12;
+  const chColors=[C.red,C.teal,C.blue];
+  const chLabels=['R','G','B'];
+  chColors.forEach((col,ch)=>{
+    const ox=20+ch*16, oy=20+ch*12;
+    ctx.fillStyle='#000'; ctx.fillRect(ox-1,oy-1,W3*cell+2,H3*cell+2);
+    ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.strokeRect(ox-1,oy-1,W3*cell+2,H3*cell+2);
+    for(let r=0;r<H3;r++) for(let c=0;c<W3;c++){
+      const v=Math.round(100+80*Math.sin(r*0.5+c*0.4+ch*1.2));
+      ctx.fillStyle=`rgb(${ch===0?v:0},${ch===1?v:0},${ch===2?v:0})`;
+      ctx.fillRect(ox+c*cell,oy+r*cell,cell,cell);
+    }
+    ctx.fillStyle=col; ctx.font='bold 10px IBM Plex Mono,monospace';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText(chLabels[ch], ox+W3*cell+5, oy+H3*cell/2);
+  });
+  ctx.fillStyle=C.muted; ctx.font='10px IBM Plex Mono,monospace';
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillText('Color input: 224×224×3', 18, 170);
+
+  // GPU icons
+  ctx.fillStyle=C.red; ctx.font='bold 11px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('Trained on 2× GPU', cv.width/2, 200);
+  ctx.fillStyle=C.muted; ctx.font='10px IBM Plex Mono,monospace';
+  ctx.fillText('60 million parameters', cv.width/2, 218);
+  ctx.fillText('1000 output classes', cv.width/2, 234);
+  ctx.fillStyle=C.navy; ctx.font='bold 12px IBM Plex Mono,monospace';
+  ctx.fillText('Top-5 Error: 15.3%', cv.width/2, 256);
+  ctx.fillStyle=C.red; ctx.font='9px IBM Plex Mono,monospace';
+  ctx.fillText('(2nd place: 26.2%)', cv.width/2, 272);
+}
+
+function drawEraDC() {
+  const cv=document.getElementById('eraDCCanvas');
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle=C.surface; ctx.fillRect(0,0,cv.width,cv.height);
+
+  // Pie-like summary
+  const cx=cv.width/2, cy=120, r=80;
+  ctx.fillStyle=C.navy+'22'; ctx.strokeStyle=C.navy; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+
+  // cat half
+  ctx.fillStyle=C.navy+'55';
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI*0.995); ctx.closePath(); ctx.fill();
+  // dog half
+  ctx.fillStyle=C.red+'55';
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,-Math.PI/2+Math.PI*0.995,-Math.PI/2+Math.PI*2); ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle=C.navy; ctx.font='bold 22px Libre Baskerville,serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🐱', cx-42, cy);
+  ctx.fillStyle=C.red;
+  ctx.fillText('🐶', cx+42, cy);
+
+  ctx.fillStyle=C.muted; ctx.font='10px IBM Plex Mono,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('12,500 cat images', cx, cy+r+16);
+  ctx.fillText('12,500 dog images', cx, cy+r+30);
+
+  ctx.fillStyle=C.teal; ctx.font='bold 13px IBM Plex Mono,monospace';
+  ctx.fillText('CNN accuracy: >99.5%', cx, cy+r+54);
+  ctx.fillStyle=C.muted; ctx.font='10px IBM Plex Mono,monospace';
+  ctx.fillText('Human parity achieved', cx, cy+r+70);
+  ctx.fillStyle=C.navy; ctx.font='bold 11px IBM Plex Mono,monospace';
+  ctx.fillText('25,000 total training images', cx, cy+r+90);
+}
+
+/* ── INIT ── */
+window.addEventListener('load', () => {
+  drawTimelineChart();
+  drawMNISTSamples();
+  drawLeNet();
+  drawAlexNet();
+  drawComparison();
+  drawDogsVsCats();
+  drawEraLenet();
+});
+</script>
+</body>
+</html>

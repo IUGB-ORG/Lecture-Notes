@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN Visual Explorer (2-Layer) — CSC 4315 · IUGB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:       #080a10;
+            --surface:  #0f1220;
+            --surface2: #161928;
+            --border:   #1e2436;
+            --border2:  #2a3050;
+            --accent:   #00c9a7;
+            --accent2:  #a78bfa;   /* layer-2 purple */
+            --gold:     #ffc94d;
+            --neg:      #f05a5a;
+            --text:     #dce1ef;
+            --muted:    #4a5472;
+            --mono:     'Fira Code', monospace;
+            --sans:     'Rajdhani', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; padding-bottom: 50px; }
+
+        /* ── HEADER ── */
+        header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; gap: 16px; }
+        .logo-pill { background: var(--accent); color: #000; font-weight: 700; font-size: 11px; letter-spacing: 2px; padding: 4px 10px; border-radius: 3px; }
+        header h1 { font-size: 1.3rem; font-weight: 700; }
+        header p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        /* ── CONTROLS BAR ── */
+        .controls-bar { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 12px 28px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+        .ctrl-group { display: flex; align-items: center; gap: 8px; }
+        .ctrl-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; white-space: nowrap; }
+        .layer-badge { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; }
+        .l1-badge { background: rgba(0,201,167,.15); color: var(--accent); border: 1px solid rgba(0,201,167,.3); }
+        .l2-badge { background: rgba(167,139,250,.15); color: var(--accent2); border: 1px solid rgba(167,139,250,.3); }
+        .upload-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #000; border: none; padding: 7px 16px; border-radius: 4px; font-family: var(--sans); font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; transition: background .15s; }
+        .upload-btn:hover { background: #009e82; }
+        select { background: var(--surface); color: var(--text); border: 1px solid var(--border2); padding: 6px 10px; border-radius: 4px; font-family: var(--mono); font-size: 12px; cursor: pointer; }
+        .vdiv { width: 1px; height: 28px; background: var(--border); margin: 0 4px; }
+
+        /* ── PIPELINE STRIP ── */
+        .pipeline { display: flex; align-items: center; gap: 0; padding: 10px 28px; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; flex-wrap: nowrap; }
+        .pipe-btn { padding: 8px 18px; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--border2); border-radius: 4px; cursor: pointer; background: var(--surface2); color: var(--muted); transition: all .2s; white-space: nowrap; }
+        .pipe-btn:not(:disabled):hover  { background: var(--accent); color: #000; border-color: var(--accent); }
+        .pipe-btn.l2:not(:disabled):hover { background: var(--accent2); color: #000; border-color: var(--accent2); }
+        .pipe-btn:disabled { cursor: not-allowed; opacity: .3; }
+        .pipe-btn.active   { background: var(--accent); color: #000; border-color: var(--accent); }
+        .pipe-btn.active.l2 { background: var(--accent2); color: #000; border-color: var(--accent2); }
+        .pipe-arrow { color: var(--border2); font-size: 18px; padding: 0 6px; flex-shrink: 0; }
+        .pipe-arrow.lit { color: var(--accent); }
+        .pipe-arrow.lit.l2 { color: var(--accent2); }
+        .pipe-layer-sep { font-size: 9px; letter-spacing: 2px; color: var(--muted); padding: 4px 10px; border: 1px solid var(--border2); border-radius: 3px; margin: 0 6px; white-space: nowrap; font-family: var(--mono); }
+        #resetBtn { margin-left: auto; padding: 7px 14px; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--border2); border-radius: 4px; cursor: pointer; background: transparent; color: var(--muted); transition: all .15s; }
+        #resetBtn:hover:not(:disabled) { border-color: var(--neg); color: var(--neg); }
+        #resetBtn:disabled { opacity: .3; cursor: not-allowed; }
+
+        /* ── GALLERY ── */
+        .gallery { padding: 24px 28px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+
+        /* Full-width layer divider inside the flex gallery */
+        .gallery-layer-break {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 10px;
+            font-family: var(--mono);
+            letter-spacing: 2px;
+            padding: 4px 0;
+        }
+        .gallery-layer-break::before, .gallery-layer-break::after {
+            content: ''; flex: 1; height: 1px;
+        }
+        .gallery-layer-break.l1 { color: var(--accent); }
+        .gallery-layer-break.l1::before, .gallery-layer-break.l1::after { background: rgba(0,201,167,.25); }
+        .gallery-layer-break.l2 { color: var(--accent2); }
+        .gallery-layer-break.l2::before, .gallery-layer-break.l2::after { background: rgba(167,139,250,.25); }
+
+        /* ── CARDS ── */
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+        .card.l2-card { border-color: rgba(167,139,250,.25); }
+        .card-header { padding: 10px 14px 8px; border-bottom: 1px solid var(--border); }
+        .card-title { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; }
+        .card-title.col-orig  { color: #6a89cc; }
+        .card-title.col-conv  { color: var(--accent); }
+        .card-title.col-relu  { color: var(--gold); }
+        .card-title.col-pool  { color: var(--neg); }
+        .card-title.col-conv2 { color: var(--accent2); }
+        .card-title.col-relu2 { color: #e879f9; }
+        .card-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+        .card canvas { display: block; max-width: 100%; }
+        .card-footer { padding: 8px 14px; border-top: 1px solid var(--border); font-size: 10px; color: var(--muted); font-family: var(--mono); display: flex; justify-content: space-between; align-items: center; }
+        .dim-badge { background: var(--surface2); border: 1px solid var(--border2); border-radius: 3px; padding: 2px 7px; font-size: 10px; font-family: var(--mono); }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); flex-shrink: 0; }
+        .status-dot.l2 { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+
+        /* ── EXPLANATION STRIP ── */
+        .explain-strip { margin: 0 28px 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 20px; display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+        .explain-block { flex: 1; min-width: 160px; }
+        .explain-title { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+        .explain-body { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+        /* ── ARROW ── */
+        .flow-arrow { display: flex; align-items: center; color: var(--accent); font-size: 26px; padding: 0 2px; align-self: center; opacity: .6; }
+        .flow-arrow.l2 { color: var(--accent2); }
+
+        /* ── PLACEHOLDER ── */
+        .placeholder { width: 100%; text-align: center; padding: 70px 20px; color: var(--muted); }
+        .placeholder strong { display: block; font-size: 22px; color: var(--text); margin-bottom: 8px; }
+
+        /* ── KERNEL CHIP ── */
+        .kernel-chip { display: inline-grid; grid-template-columns: repeat(3, 20px); gap: 1px; font-family: var(--mono); font-size: 8px; vertical-align: middle; margin-left: 6px; }
+        .kernel-chip span { text-align: center; background: var(--surface); padding: 1px; border-radius: 1px; }
+        .kp { color: var(--accent); } .kn { color: var(--neg); } .kz { color: var(--muted); }
+
+        @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+        .card { animation: fadeIn .3s ease both; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-pill">CSC 4315</div>
+    <div>
+        <h1>CNN Visual Feature Map Explorer — 2-Layer Network</h1>
+        <p>IUGB · School of Science and Engineering · Conv1 → ReLU1 → Pool1 → Conv2 → ReLU2</p>
+    </div>
+</header>
+
+<div class="controls-bar">
+    <div class="ctrl-group">
+        <label class="upload-btn">⬆ Upload Image
+            <input type="file" id="imageInput" accept="image/*" style="display:none">
+        </label>
+    </div>
+    <div class="vdiv"></div>
+    <div class="ctrl-group">
+        <span class="layer-badge l1-badge">Layer 1 Filter</span>
+        <select id="kernelSelect">
+            <option value="edge_laplacian">Edge (Laplacian)</option>
+            <option value="edge_sobel_h">Sobel Horizontal</option>
+            <option value="edge_sobel_v">Sobel Vertical</option>
+            <option value="blur">Box Blur</option>
+            <option value="gaussian">Gaussian Blur</option>
+            <option value="sharpen">Sharpen</option>
+            <option value="emboss">Emboss</option>
+        </select>
+    </div>
+    <div class="ctrl-group">
+        <span class="layer-badge l2-badge">Layer 2 Filter</span>
+        <select id="kernelSelect2">
+            <option value="sharpen">Sharpen</option>
+            <option value="edge_laplacian">Edge (Laplacian)</option>
+            <option value="edge_sobel_h">Sobel Horizontal</option>
+            <option value="edge_sobel_v">Sobel Vertical</option>
+            <option value="blur">Box Blur</option>
+            <option value="gaussian">Gaussian Blur</option>
+            <option value="emboss">Emboss</option>
+        </select>
+    </div>
+    <div class="vdiv"></div>
+    <div class="ctrl-group">
+        <span class="ctrl-label">Color Map</span>
+        <select id="colormap">
+            <option value="gray">Grayscale</option>
+            <option value="hot">Heat (warm)</option>
+            <option value="cool">Cool (blue→white)</option>
+            <option value="viridis">Viridis</option>
+        </select>
+    </div>
+</div>
+
+<div class="pipeline">
+    <!-- Layer 1 -->
+    <button class="pipe-btn"    id="btnConv"  disabled>① Conv 1</button>
+    <span   class="pipe-arrow" id="arr1">→</span>
+    <button class="pipe-btn"    id="btnRelu"  disabled>② ReLU 1</button>
+    <span   class="pipe-arrow" id="arr2">→</span>
+    <button class="pipe-btn"    id="btnPool"  disabled>③ Pool 1</button>
+    <!-- Layer boundary marker -->
+    <span class="pipe-layer-sep">LAYER 2</span>
+    <button class="pipe-btn l2" id="btnConv2" disabled>④ Conv 2</button>
+    <span   class="pipe-arrow" id="arr3">→</span>
+    <button class="pipe-btn l2" id="btnRelu2" disabled>⑤ ReLU 2</button>
+    <span   class="pipe-arrow" id="arr4">→</span>
+    <button class="pipe-btn l2" id="btnPool2" disabled>⑥ Pool 2 (2×2)</button>
+    <button id="resetBtn" disabled>↺ Reset</button>
+</div>
+
+<div class="gallery" id="gallery">
+    <div class="placeholder">
+        <strong>Upload any image to begin</strong>
+        <p>Step through both CNN layers — each operation appears as a new panel.</p>
+    </div>
+</div>
+
+<div class="explain-strip" id="explainStrip" style="display:none">
+    <div class="explain-block">
+        <div class="explain-title" style="color:#6a89cc">① Original</div>
+        <div class="explain-body" id="exOrig">—</div>
+    </div>
+    <div class="explain-block">
+        <div class="explain-title" style="color:var(--accent)">② Conv 1</div>
+        <div class="explain-body" id="exConv">Press ① to apply Layer 1 filter.</div>
+    </div>
+    <div class="explain-block">
+        <div class="explain-title" style="color:var(--gold)">③ ReLU 1</div>
+        <div class="explain-body" id="exRelu">Press ② after Conv 1.</div>
+    </div>
+    <div class="explain-block">
+        <div class="explain-title" style="color:var(--neg)">④ Pool 1</div>
+        <div class="explain-body" id="exPool">Press ③ after ReLU 1.</div>
+    </div>
+    <div class="explain-block">
+        <div class="explain-title" style="color:var(--accent2)">⑤ Conv 2</div>
+        <div class="explain-body" id="exConv2">Press ④ after Pool 1.</div>
+    </div>
+    <div class="explain-block">
+        <div class="explain-title" style="color:#e879f9">⑥ ReLU 2</div>
+        <div class="explain-body" id="exRelu2">Press ⑤ after Conv 2.</div>
+    </div>
+    <div class="explain-block">
+        <div class="explain-title" style="color:var(--neg)">⑦ Pool 2</div>
+        <div class="explain-body" id="exPool2">Press ⑥ after ReLU 2.</div>
+    </div>
+</div>
+
+<script>
+// ── KERNELS ───────────────────────────────────────────────────────────────────
+const KERNELS = {
+    edge_laplacian: { name: 'Laplacian Edge',    vals: [-1,-1,-1,-1,8,-1,-1,-1,-1] },
+    edge_sobel_h:   { name: 'Sobel Horizontal',  vals: [-1,-2,-1,0,0,0,1,2,1] },
+    edge_sobel_v:   { name: 'Sobel Vertical',    vals: [-1,0,1,-2,0,2,-1,0,1] },
+    blur:           { name: 'Box Blur',           vals: [1/9,1/9,1/9,1/9,1/9,1/9,1/9,1/9,1/9] },
+    gaussian:       { name: 'Gaussian Blur',      vals: [1/16,2/16,1/16,2/16,4/16,2/16,1/16,2/16,1/16] },
+    sharpen:        { name: 'Sharpen',            vals: [0,-1,0,-1,5,-1,0,-1,0] },
+    emboss:         { name: 'Emboss',             vals: [-2,-1,0,-1,1,1,0,1,2] },
+};
+
+// ── COLORMAPS ─────────────────────────────────────────────────────────────────
+function applyColormap(v, map) {
+    const t = v / 255;
+    if (map === 'gray') return [v, v, v];
+    if (map === 'hot') {
+        if (t < 0.33) return [Math.round(t/0.33*255), 0, 0];
+        if (t < 0.66) return [255, Math.round((t-0.33)/0.33*255), 0];
+        return [255, 255, Math.round((t-0.66)/0.34*255)];
+    }
+    if (map === 'cool') return [Math.round(t*255), Math.round(t*255), 255];
+    if (map === 'viridis') {
+        const vp = [[68,1,84],[59,82,139],[33,145,140],[94,201,98],[253,231,37]];
+        const si = Math.min(3, Math.floor(t*4)), tf = t*4-si;
+        const a=vp[si], b=vp[si+1]||vp[si];
+        return [Math.round(a[0]+(b[0]-a[0])*tf), Math.round(a[1]+(b[1]-a[1])*tf), Math.round(a[2]+(b[2]-a[2])*tf)];
+    }
+    return [v, v, v];
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let S = {
+    origData: null,
+    // Layer 1
+    convData: null, reluData: null, poolData: null,
+    W: 0, H: 0,
+    // Layer 2
+    conv2Data: null, relu2Data: null, pool2Data: null,
+    W2: 0, H2: 0, W3: 0, H3: 0,
+    step: 'none', // none|conv|relu|pool|conv2|relu2|pool2
+};
+
+// ── SIGNAL STEPS ─────────────────────────────────────────────────────────────
+const L2_STEPS = new Set(['pool','conv2','relu2','pool2']);
+
+// ── CANVAS UTILS ─────────────────────────────────────────────────────────────
+const DISPLAY_MAX = 300;
+function displaySize(w, h) {
+    const scale = Math.min(1, DISPLAY_MAX / Math.max(w, h));
+    return { dw: Math.round(w*scale), dh: Math.round(h*scale) };
+}
+
+function makeCard(titleText, titleClass, subText, w, h, isL2=false) {
+    const { dw, dh } = displaySize(w, h);
+    const card = document.createElement('div');
+    card.className = 'card' + (isL2 ? ' l2-card' : '');
+
+    const hdr = document.createElement('div');
+    hdr.className = 'card-header';
+    hdr.innerHTML = `<div class="card-title ${titleClass}">${titleText}</div>
+                     <div class="card-sub">${subText}</div>`;
+    card.appendChild(hdr);
+
+    const cnv = document.createElement('canvas');
+    cnv.width = w; cnv.height = h;
+    cnv.style.width = dw+'px'; cnv.style.height = dh+'px';
+    card.appendChild(cnv);
+
+    const ftr = document.createElement('div');
+    ftr.className = 'card-footer';
+    ftr.innerHTML = `<span class="dim-badge">${w} × ${h}</span>
+                     <span class="status-dot${isL2?' l2':''}"></span>`;
+    card.appendChild(ftr);
+
+    return { card, canvas: cnv };
+}
+
+function putGray(canvas, data) {
+    const ctx = canvas.getContext('2d');
+    const img = ctx.createImageData(canvas.width, canvas.height);
+    const n = canvas.width * canvas.height;
+    let mn=Infinity, mx=-Infinity;
+    for (let i=0;i<n;i++) { if(data[i]<mn)mn=data[i]; if(data[i]>mx)mx=data[i]; }
+    const range = mx-mn || 1;
+    const cmap = document.getElementById('colormap').value;
+    for (let i=0;i<n;i++) {
+        const v = Math.round(((data[i]-mn)/range)*255);
+        const [r,g,b] = applyColormap(v, cmap);
+        img.data[i*4]=r; img.data[i*4+1]=g; img.data[i*4+2]=b; img.data[i*4+3]=255;
+    }
+    ctx.putImageData(img, 0, 0);
+}
+
+function putOriginal(canvas, imageData) {
+    canvas.width=imageData.width; canvas.height=imageData.height;
+    canvas.getContext('2d').putImageData(imageData, 0, 0);
+}
+
+// ── MATH ─────────────────────────────────────────────────────────────────────
+function toGray(imageData) {
+    const d=imageData.data, n=imageData.width*imageData.height;
+    const g=new Float32Array(n);
+    for (let i=0;i<n;i++) g[i]=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
+    return g;
+}
+
+function convolve(gray, W, H, kernel) {
+    const out = new Float32Array(W*H);
+    for (let y=0;y<H;y++) for (let x=0;x<W;x++) {
+        let s=0, ki=0;
+        for (let ky=-1;ky<=1;ky++) for (let kx=-1;kx<=1;kx++) {
+            const py=y+ky, px=x+kx;
+            s += ((py>=0&&py<H&&px>=0&&px<W)?gray[py*W+px]:0) * kernel[ki++];
+        }
+        out[y*W+x]=s;
+    }
+    return out;
+}
+
+function relu(data) {
+    const out=new Float32Array(data.length);
+    for (let i=0;i<data.length;i++) out[i]=Math.max(0,data[i]);
+    return out;
+}
+
+function maxPool(data, W, H) {
+    const nW=Math.floor(W/2), nH=Math.floor(H/2), out=new Float32Array(nW*nH);
+    for (let y=0;y<nH;y++) for (let x=0;x<nW;x++) {
+        out[y*nW+x]=Math.max(
+            data[(y*2)*W+(x*2)], data[(y*2)*W+(x*2+1)],
+            data[(y*2+1)*W+(x*2)], data[(y*2+1)*W+(x*2+1)]
+        );
+    }
+    return { out, nW, nH };
+}
+
+// ── GALLERY BUILDER ───────────────────────────────────────────────────────────
+function makeArrow(isL2=false) {
+    const d=document.createElement('div');
+    d.className='flow-arrow'+(isL2?' l2':'');
+    d.textContent='→';
+    return d;
+}
+
+function makeLayerBreak(label, cls) {
+    const d=document.createElement('div');
+    d.className=`gallery-layer-break ${cls}`;
+    d.textContent=label;
+    return d;
+}
+
+function buildGallery() {
+    const g = document.getElementById('gallery');
+    g.innerHTML = '';
+
+    if (!S.origData) {
+        g.innerHTML='<div class="placeholder"><strong>Upload any image to begin</strong><p>Each CNN operation appears as a new panel as you step through the pipeline.</p></div>';
+        return;
+    }
+
+    const k1 = KERNELS[document.getElementById('kernelSelect').value];
+    const k2 = KERNELS[document.getElementById('kernelSelect2').value];
+
+    // ══ LAYER 1 DIVIDER ══
+    g.appendChild(makeLayerBreak('LAYER 1 — Input → Conv → ReLU → Pool', 'l1'));
+
+    // Card 0: Original
+    const c0 = makeCard('① Original Image','col-orig',`${S.W}×${S.H} px · RGB · no processing`,S.W,S.H,false);
+    g.appendChild(c0.card);
+    putOriginal(c0.canvas, S.origData);
+
+    if (S.step === 'none') return;
+    g.appendChild(makeArrow(false));
+
+    // Card 1: Conv1
+    const c1 = makeCard('② Conv 1 — Feature Map','col-conv',`Filter: ${k1.name} · same padding`,S.W,S.H,false);
+    g.appendChild(c1.card);
+    putGray(c1.canvas, S.convData);
+
+    if (S.step === 'conv') return;
+    g.appendChild(makeArrow(false));
+
+    // Card 2: ReLU1
+    const c2 = makeCard('③ ReLU 1','col-relu','max(0,x) · negatives zeroed out',S.W,S.H,false);
+    g.appendChild(c2.card);
+    putGray(c2.canvas, S.reluData);
+
+    if (S.step === 'relu') return;
+    g.appendChild(makeArrow(false));
+
+    // Card 3: Pool1
+    const pW=S.W2, pH=S.H2;
+    const c3 = makeCard('④ Pool 1 (Max 2×2)','col-pool',`Stride 2 · ${S.W}×${S.H} → ${pW}×${pH}`,pW,pH,false);
+    g.appendChild(c3.card);
+    putGray(c3.canvas, S.poolData);
+
+    if (!L2_STEPS.has(S.step) || S.step === 'pool' && !S.conv2Data) {
+        // Show "Layer 2 awaiting" hint when pool is done but conv2 not yet run
+        if (S.step === 'pool') {
+            const hint = document.createElement('div');
+            hint.style.cssText='align-self:center;font-family:var(--mono);font-size:11px;color:var(--muted);padding:0 8px;';
+            hint.innerHTML='→ press <span style="color:var(--accent2)">④ Conv 2</span> to continue';
+            g.appendChild(hint);
+        }
+        return;
+    }
+
+    // ══ LAYER 2 DIVIDER ══
+    g.appendChild(makeLayerBreak('LAYER 2 — Pool 1 output → Conv 2 → ReLU 2', 'l2'));
+
+    // Pool-1 output shown again as Layer-2 input for context
+    const c3b = makeCard('⑤ L2 Input (= Pool 1 output)','col-pool',`${pW}×${pH} px · this is what Layer 2 "sees"`,pW,pH,true);
+    g.appendChild(c3b.card);
+    putGray(c3b.canvas, S.poolData);
+
+    g.appendChild(makeArrow(true));
+
+    // Card 4: Conv2
+    const c4 = makeCard('⑥ Conv 2 — Feature Map','col-conv2',`Filter: ${k2.name} · applied to Pool 1 output`,pW,pH,true);
+    g.appendChild(c4.card);
+    putGray(c4.canvas, S.conv2Data);
+
+    if (S.step === 'conv2') return;
+    g.appendChild(makeArrow(true));
+
+    // Card 5: ReLU2
+    const c5 = makeCard('⑦ ReLU 2 — Feature Map','col-relu2',`max(0,x) · ${pW}×${pH} px`,pW,pH,true);
+    g.appendChild(c5.card);
+    putGray(c5.canvas, S.relu2Data);
+
+    if (S.step === 'relu2') return;
+    g.appendChild(makeArrow(true));
+
+    // Card 6: Pool2
+    const p2W=S.W3, p2H=S.H3;
+    const c6 = makeCard('⑧ Pool 2 (Max 2×2)','col-pool',`Stride 2 · ${pW}×${pH} → ${p2W}×${p2H} · final feature map`,p2W,p2H,true);
+    g.appendChild(c6.card);
+    putGray(c6.canvas, S.pool2Data);
+}
+
+// ── EXPLANATION STRIP ─────────────────────────────────────────────────────────
+function updateExplain() {
+    const strip = document.getElementById('explainStrip');
+    strip.style.display = S.step === 'none' ? 'none' : 'flex';
+    if (S.step === 'none') return;
+
+    const k1 = KERNELS[document.getElementById('kernelSelect').value];
+    const k2 = KERNELS[document.getElementById('kernelSelect2').value];
+
+    document.getElementById('exOrig').innerHTML =
+        `Raw ${S.W}×${S.H} input image in RGB. Converted to grayscale before convolution.`;
+
+    document.getElementById('exConv').innerHTML =
+        `<strong>${k1.name}</strong> kernel${chip(k1.vals)} slides over every pixel. ` +
+        `Bright = strong positive response. Dark = negative. Grey ≈ 0.`;
+
+    document.getElementById('exRelu').innerHTML = ['conv','none'].includes(S.step)
+        ? 'Press ② after Conv 1.'
+        : `max(0,x) clamps all negatives to zero. <strong>Black regions</strong> had negative activations — suppressed features.`;
+
+    document.getElementById('exPool').innerHTML = !L2_STEPS.has(S.step) && S.step !== 'relu'
+        ? 'Press ③ after ReLU 1.'
+        : `Max Pool 2×2 (stride 2) picks the <strong>maximum from each 2×2 block</strong>. Size halved to ${S.W2}×${S.H2}. ` +
+          `Features are now position-tolerant.`;
+
+    document.getElementById('exConv2').innerHTML = !['conv2','relu2'].includes(S.step)
+        ? 'Press ④ after Pool 1. Layer 2 operates on the smaller feature map.'
+        : `<strong>${k2.name}</strong> kernel${chip(k2.vals)} now scans the ${S.W2}×${S.H2} Pool 1 output. ` +
+          `Layer 2 detects <em>combinations</em> of the features Layer 1 found — higher-level patterns.`;
+
+    document.getElementById('exRelu2').innerHTML = S.step !== 'relu2' && S.step !== 'pool2'
+        ? 'Press ⑤ after Conv 2.'
+        : `max(0,x) again. Black regions = suppressed activations. Layer 2 has extracted <strong>higher-level features</strong> from Layer 1's output.`;
+
+    document.getElementById('exPool2').innerHTML = S.step !== 'pool2'
+        ? 'Press ⑥ after ReLU 2.'
+        : `Final Max Pool 2×2 (stride 2). Size reduced to ${S.W3}×${S.H3}. ` +
+          `This compact feature map feeds directly into a <strong>fully-connected (Dense) layer</strong> for classification.`;
+}
+
+function chip(vals) {
+    return '<div class="kernel-chip">' +
+        vals.map(v=>`<span class="${v>0?'kp':v<0?'kn':'kz'}">${Number.isInteger(v)?v:v.toFixed(2)}</span>`).join('') +
+        '</div>';
+}
+
+// ── EVENTS ────────────────────────────────────────────────────────────────────
+document.getElementById('imageInput').addEventListener('change', e => {
+    if (!e.target.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+            const maxSz=600, scale=Math.min(1,maxSz/Math.max(img.width,img.height));
+            const W=Math.round(img.width*scale), H=Math.round(img.height*scale);
+            const tmp=document.createElement('canvas'); tmp.width=W; tmp.height=H;
+            tmp.getContext('2d').drawImage(img,0,0,W,H);
+            S.origData=tmp.getContext('2d').getImageData(0,0,W,H);
+            S.W=W; S.H=H;
+            Object.assign(S,{step:'none',convData:null,reluData:null,poolData:null,
+                conv2Data:null,relu2Data:null,pool2Data:null,W2:0,H2:0,W3:0,H3:0});
+            enableBtns(true,false,false,false,false,false,false);
+            buildGallery(); updateExplain();
+        };
+        img.src=ev.target.result;
+    };
+    reader.readAsDataURL(e.target.files[0]);
+});
+
+document.getElementById('btnConv').addEventListener('click', () => {
+    const k=KERNELS[document.getElementById('kernelSelect').value];
+    S.convData=convolve(toGray(S.origData), S.W, S.H, k.vals);
+    S.step='conv';
+    enableBtns(false,true,false,false,false,false,true);
+    document.getElementById('btnConv').classList.add('active');
+    document.getElementById('arr1').classList.add('lit');
+    buildGallery(); updateExplain();
+});
+
+document.getElementById('btnRelu').addEventListener('click', () => {
+    S.reluData=relu(S.convData); S.step='relu';
+    enableBtns(false,false,true,false,false,false,true);
+    document.getElementById('btnRelu').classList.add('active');
+    document.getElementById('arr2').classList.add('lit');
+    buildGallery(); updateExplain();
+});
+
+document.getElementById('btnPool').addEventListener('click', () => {
+    const {out,nW,nH}=maxPool(S.reluData,S.W,S.H);
+    S.poolData=out; S.W2=nW; S.H2=nH; S.step='pool';
+    enableBtns(false,false,false,true,false,false,true);
+    document.getElementById('btnPool').classList.add('active');
+    buildGallery(); updateExplain();
+});
+
+document.getElementById('btnConv2').addEventListener('click', () => {
+    const k=KERNELS[document.getElementById('kernelSelect2').value];
+    S.conv2Data=convolve(S.poolData, S.W2, S.H2, k.vals);
+    S.step='conv2';
+    enableBtns(false,false,false,false,true,false,true);
+    document.getElementById('btnConv2').classList.add('active');
+    document.getElementById('arr3').classList.add('lit','l2');
+    buildGallery(); updateExplain();
+});
+
+document.getElementById('btnRelu2').addEventListener('click', () => {
+    S.relu2Data=relu(S.conv2Data); S.step='relu2';
+    enableBtns(false,false,false,false,false,true,true);
+    document.getElementById('btnRelu2').classList.add('active');
+    document.getElementById('arr4').classList.add('lit','l2');
+    buildGallery(); updateExplain();
+});
+
+document.getElementById('btnPool2').addEventListener('click', () => {
+    const {out,nW,nH}=maxPool(S.relu2Data,S.W2,S.H2);
+    S.pool2Data=out; S.W3=nW; S.H3=nH; S.step='pool2';
+    enableBtns(false,false,false,false,false,false,true);
+    document.getElementById('btnPool2').classList.add('active');
+    buildGallery(); updateExplain();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+    Object.assign(S,{step:'none',convData:null,reluData:null,poolData:null,
+        conv2Data:null,relu2Data:null,pool2Data:null,W2:0,H2:0,W3:0,H3:0});
+    enableBtns(!!S.origData,false,false,false,false,false,false);
+    ['btnConv','btnRelu','btnPool','btnConv2','btnRelu2','btnPool2']
+        .forEach(id=>document.getElementById(id).classList.remove('active'));
+    ['arr1','arr2'].forEach(id=>document.getElementById(id).classList.remove('lit'));
+    ['arr3','arr4'].forEach(id=>document.getElementById(id).classList.remove('lit','l2'));
+    buildGallery(); updateExplain();
+});
+
+document.getElementById('kernelSelect').addEventListener('change',()=>{if(S.origData&&S.step==='none')buildGallery();});
+document.getElementById('kernelSelect2').addEventListener('change',()=>{if(L2_STEPS.has(S.step))buildGallery();});
+document.getElementById('colormap').addEventListener('change',()=>{if(S.step!=='none')buildGallery();});
+
+function enableBtns(conv,relu,pool,conv2,relu2,pool2,reset) {
+    ['btnConv','btnRelu','btnPool','btnConv2','btnRelu2','btnPool2','resetBtn']
+        .forEach((id,i)=>document.getElementById(id).disabled=![conv,relu,pool,conv2,relu2,pool2,reset][i]);
+}
+</script>
+</body>
+</html>
